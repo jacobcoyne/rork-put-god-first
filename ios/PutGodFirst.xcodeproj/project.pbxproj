@@ -400,6 +400,7 @@
 				};
 			};
 			buildConfigurationList = 105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PutGodFirst" */;
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -408,11 +409,11 @@
 			);
 			mainGroup = 105FC5712E9EAD3100EA8BCF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 105FC57B2E9EAD3100EA8BCF /* Products */;
-			packageReferences = (
-				AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
-			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -682,8 +683,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SupportingFiles/Info.plist;
-				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
 				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
+				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
 				INFOPLIST_KEY_CFBundleDisplayName = "God First";
 				INFOPLIST_KEY_CFBundleName = "God First";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -694,9 +695,9 @@
 				INFOPLIST_KEY_RorkAPIBaseURL = "$(EXPO_PUBLIC_RORK_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -706,12 +707,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -729,8 +730,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SupportingFiles/Info.plist;
-				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
 				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
+				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
 				INFOPLIST_KEY_CFBundleDisplayName = "God First";
 				INFOPLIST_KEY_CFBundleName = "God First";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -741,9 +742,9 @@
 				INFOPLIST_KEY_RorkAPIBaseURL = "$(EXPO_PUBLIC_RORK_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1079,7 +1080,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+		AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
 			requirement = {
@@ -1092,12 +1093,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		AA0001022E9EAD3200EA8BCF /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */;
 			productName = RevenueCat;
 		};
 		AA0001032E9EAD3200EA8BCF /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */;
 			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
