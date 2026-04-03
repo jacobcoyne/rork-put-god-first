@@ -47,6 +47,14 @@ struct ContentView: View {
                     }
                 }
 
+                let stl = ScreenTimeLimitService.shared
+                if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
+                    stl.lockTimeLimitedApps()
+                    if DeepLinkManager.shared.pendingAction == nil {
+                        DeepLinkManager.shared.pendingAction = .timeLimitUnlock
+                    }
+                }
+
                 NotificationService.cancelTodayNotifications()
                 handlePendingDeepLink()
             }
@@ -86,6 +94,8 @@ struct ContentView: View {
             viewModel.pendingScriptureUnlock = true
         case .openSession:
             viewModel.pendingOpenSession = true
+        case .timeLimitUnlock:
+            viewModel.pendingTimeLimitUnlock = true
         }
     }
 }

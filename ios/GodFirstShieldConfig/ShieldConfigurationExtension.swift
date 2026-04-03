@@ -90,12 +90,43 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return Calendar.current.isDateInToday(lastCompleted)
     }
 
+    private var isTimeLimitBlocking: Bool {
+        sharedDefaults?.synchronize()
+        let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
+        guard locked else { return false }
+        guard let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 else { return false }
+        let d = Date(timeIntervalSince1970: ts)
+        return Calendar.current.isDateInToday(d)
+    }
+
+    private var timeLimitMinutes: Int {
+        sharedDefaults?.synchronize()
+        return sharedDefaults?.integer(forKey: "screenTimeLimitMinutes") ?? 30
+    }
+
     private func makeConfiguration() -> ShieldConfiguration {
         let bgColor = UIColor(red: 0.08, green: 0.06, blue: 0.20, alpha: 1.0)
         let titleColor = UIColor.white
         let subtitleColor = UIColor(red: 0.78, green: 0.74, blue: 0.90, alpha: 1.0)
         let buttonTextColor = UIColor.white
         let secondaryTextColor = UIColor(red: 0.6, green: 0.58, blue: 0.72, alpha: 1.0)
+
+        if isTimeLimitBlocking {
+            let buttonBgColor = UIColor(red: 1.0, green: 0.68, blue: 0.28, alpha: 1.0)
+            let icon = UIImage(systemName: "hourglass")?
+                .withTintColor(.white, renderingMode: .alwaysOriginal)
+
+            return ShieldConfiguration(
+                backgroundBlurStyle: .systemThickMaterialDark,
+                backgroundColor: bgColor,
+                icon: icon,
+                title: ShieldConfiguration.Label(text: "\u{23F0} Screen Time Limit Reached", color: titleColor),
+                subtitle: ShieldConfiguration.Label(text: "You\u{2019}ve used your \(timeLimitMinutes)-minute daily limit! \u{1F4AA} Tap below to complete a faith challenge and unlock your apps. You got this! \u{1F525}", color: subtitleColor),
+                primaryButtonLabel: ShieldConfiguration.Label(text: "Take the Challenge \u{2728}", color: buttonTextColor),
+                primaryButtonBackgroundColor: buttonBgColor,
+                secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
+            )
+        }
 
         if hasCompletedToday {
             let buttonBgColor = UIColor(red: 0.52, green: 0.35, blue: 0.95, alpha: 1.0)

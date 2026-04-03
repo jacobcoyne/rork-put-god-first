@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var activitySelection: FamilyActivitySelection = ScreenTimeService.shared.activitySelection
     @State private var morningReminderTime: Date = NotificationService.savedReminderTime
     @State private var showTimePicker: Bool = false
+    @State private var showScreenTimeLimitSettings: Bool = false
 
     private let authService = AuthenticationService.shared
 
@@ -24,6 +25,7 @@ struct SettingsView: View {
                 accountSection
                 progressSection
                 scriptureUnlockSection
+                screenTimeLimitSection
                 sessionSection
                 notificationsSection
                 screenTimeSection
@@ -64,6 +66,9 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will permanently delete your account and erase all your data, including streaks, progress, and preferences. This cannot be undone.")
+            }
+            .sheet(isPresented: $showScreenTimeLimitSettings) {
+                ScreenTimeLimitSettingsView()
             }
             .alert("Purchase Error", isPresented: $showLifetimeError) {
                 Button("OK") {}
@@ -204,6 +209,60 @@ struct SettingsView: View {
                 .font(.system(size: 13, weight: .bold))
         } footer: {
             Text("After completing your morning session, recite scripture aloud to unlock apps again later in the day.")
+                .font(.system(size: 12))
+        }
+    }
+
+    private var screenTimeLimitSection: some View {
+        Section {
+            Button {
+                showScreenTimeLimitSettings = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Theme.dawnAmber)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Screen Time Limits")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(ScreenTimeLimitService.shared.isEnabled ? "\(ScreenTimeLimitService.shared.dailyLimitMinutes) min daily limit" : "Set daily app time limits")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(ScreenTimeLimitService.shared.isEnabled ? Theme.dawnAmber : Theme.textSecondary)
+                    }
+                    Spacer()
+                    if ScreenTimeLimitService.shared.isEnabled {
+                        Text("On")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Theme.successEmerald)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Theme.successEmerald.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary.opacity(0.4))
+                }
+            }
+
+            if ScreenTimeLimitService.shared.isTimeLimitLocked {
+                HStack(spacing: 10) {
+                    Image(systemName: "hourglass.tophalf.filled")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.dawnAmber)
+                    Text("Time limit exceeded \u{2014} challenge required")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.dawnAmber)
+                    Spacer()
+                }
+                .listRowBackground(Theme.dawnAmber.opacity(0.08))
+            }
+        } header: {
+            Text("Screen Time Limits")
+                .font(.system(size: 13, weight: .bold))
+        } footer: {
+            Text("Limit daily usage on chosen apps. Exceed the limit and you\u{2019}ll need to recite scripture or photograph your open Bible to unlock.")
                 .font(.system(size: 12))
         }
     }

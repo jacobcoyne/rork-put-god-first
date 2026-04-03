@@ -14,7 +14,42 @@ class ShieldActionExtension: ShieldActionDelegate {
         return Calendar.current.isDateInToday(lastCompleted)
     }
 
+    private var isTimeLimitBlocking: Bool {
+        sharedDefaults?.synchronize()
+        let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
+        guard locked else { return false }
+        guard let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 else { return false }
+        let d = Date(timeIntervalSince1970: ts)
+        return Calendar.current.isDateInToday(d)
+    }
+
+    private func sendTimeLimitChallengeNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Screen Time Limit Reached \u{23F0}"
+        content.body = "Tap here to complete a challenge and unlock your apps."
+        content.userInfo = [
+            "isTimeLimitChallenge": true,
+            "deepLink": "putgodfirst://time-limit-unlock"
+        ]
+        content.sound = .default
+        content.categoryIdentifier = "SCREEN_TIME_LIMIT"
+        content.interruptionLevel = .timeSensitive
+        content.relevanceScore = 1.0
+
+        let request = UNNotificationRequest(
+            identifier: "godFirst.timeLimitShield.\(UUID().uuidString)",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
+
     private func sendOpenAppNotification() {
+        if isTimeLimitBlocking {
+            sendTimeLimitChallengeNotification()
+            return
+        }
+
         let content = UNMutableNotificationContent()
         let isPostSession = hasCompletedToday
 

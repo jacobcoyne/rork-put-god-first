@@ -2,9 +2,11 @@ import Foundation
 import DeviceActivity
 import ManagedSettings
 import FamilyControls
+import UserNotifications
 
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     let store = ManagedSettingsStore(named: .init("godFirst"))
+    let timeLimitStore = ManagedSettingsStore(named: .init("godFirstScreenTimeLimit"))
     let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
 
     private var isGodFirstModeActive: Bool {
@@ -221,5 +223,82 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if !hasCompletedToday {
             applyShields()
         }
+    }
+
+    override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
+        super.eventDidReachThreshold(event, activity: activity)
+        sharedDefaults?.synchronize()
+
+        if activity.rawValue == "godFirst.screenTimeLimit" && event.rawValue == "godFirst.timeLimitReached" {
+            let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+            guard isEnabled else { return }
+
+            let alreadyUnlocked = wasTimeLimitUnlockedToday
+            guard !alreadyUnlocked else { return }
+
+            applyTimeLimitShields()
+        }
+    }
+
+    override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
+        super.eventWillReachThresholdWarning(event, activity: activity)
+    }
+
+    private var wasTimeLimitUnlockedToday: Bool {
+        sharedDefaults?.synchronize()
+        guard let timestamp = sharedDefaults?.double(forKey: "lastTimeLimitUnlockTimestamp"), timestamp > 0 else {
+            return false
+        }
+        let unlockDate = Date(timeIntervalSince1970: timestamp)
+        return Calendar.current.isDateInToday(unlockDate)
+    }
+
+    private func loadTimeLimitSelection() -> (Set<ApplicationToken>, Set<ActivityCategoryToken>)? {
+        sharedDefaults?.synchronize()
+        guard let data = sharedDefaults?.data(forKey: "timeLimitActivitySelection"),
+              let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
+            return nil
+        }
+        return (selection.applicationTokens, selection.categoryTokens)
+    }
+
+    private func applyTimeLimitShields() {
+        guard let (apps, categories) = loadTimeLimitSelection() else { return }
+        guard !apps.isEmpty || !categories.isEmpty else { return }
+
+        if !apps.isEmpty {
+            timeLimitStore.shield.applications = apps
+        }
+        if !categories.isEmpty {
+            timeLimitStore.shield.applicationCategories = .specific(categories)
+        }
+
+        sharedDefaults?.set(true, forKey: "isTimeLimitLocked")
+        sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "timeLimitLockTimestamp")
+        sharedDefaults?.set(true, forKey: "isTimeLimitBlocking")
+        sharedDefaults?.synchronize()
+
+        sendTimeLimitNotification()
+    }
+
+    private func sendTimeLimitNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Screen Time Limit Reached \u{23F0}"
+        content.body = "You\u{2019}ve hit your daily limit. Complete a challenge to unlock!"
+        content.sound = .default
+        content.categoryIdentifier = "SCREEN_TIME_LIMIT"
+        content.interruptionLevel = .timeSensitive
+        content.relevanceScore = 1.0
+        content.userInfo = [
+            "deepLink": "putgodfirst://time-limit-unlock",
+            "isTimeLimitChallenge": true
+        ]
+
+        let request = UNNotificationRequest(
+            identifier: "godFirst.timeLimit.\(UUID().uuidString)",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+        )
+        UNUserNotificationCenter.current().add(request)
     }
 }

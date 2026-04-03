@@ -26,6 +26,8 @@ struct GodFirstAppApp: App {
             DeepLinkManager.shared.pendingAction = .scriptureUnlock
         case "start-session":
             DeepLinkManager.shared.pendingAction = .openSession
+        case "time-limit-unlock":
+            DeepLinkManager.shared.pendingAction = .timeLimitUnlock
         default:
             break
         }
@@ -65,8 +67,19 @@ struct GodFirstAppApp: App {
             intentIdentifiers: [],
             options: []
         )
+        let challengeAction = UNNotificationAction(
+            identifier: "TAKE_CHALLENGE",
+            title: "Take the Challenge",
+            options: [.foreground]
+        )
+        let timeLimitCategory = UNNotificationCategory(
+            identifier: "SCREEN_TIME_LIMIT",
+            actions: [challengeAction],
+            intentIdentifiers: [],
+            options: []
+        )
         let center = UNUserNotificationCenter.current()
-        center.setNotificationCategories([shieldCategory, openAppCategory, alarmCategory])
+        center.setNotificationCategories([shieldCategory, openAppCategory, alarmCategory, timeLimitCategory])
     }
 }
 
@@ -106,9 +119,18 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
                     DeepLinkManager.shared.pendingAction = .scriptureUnlock
                 } else if url.host == "start-session" {
                     DeepLinkManager.shared.pendingAction = .openSession
+                } else if url.host == "time-limit-unlock" {
+                    DeepLinkManager.shared.pendingAction = .timeLimitUnlock
                 } else {
                     UIApplication.shared.open(url)
                 }
+            }
+            return
+        }
+
+        if categoryId == "SCREEN_TIME_LIMIT" || (userInfo["isTimeLimitChallenge"] as? Bool == true) {
+            await MainActor.run {
+                DeepLinkManager.shared.pendingAction = .timeLimitUnlock
             }
             return
         }

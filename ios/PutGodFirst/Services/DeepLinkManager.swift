@@ -3,6 +3,7 @@ import SwiftUI
 nonisolated enum DeepLinkAction: Sendable, Equatable {
     case scriptureUnlock
     case openSession
+    case timeLimitUnlock
 }
 
 @Observable
