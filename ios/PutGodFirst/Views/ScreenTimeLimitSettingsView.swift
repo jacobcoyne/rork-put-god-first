@@ -392,8 +392,10 @@ struct ScreenTimeLimitSettingsView: View {
     }
 
     private func applySettings() {
-        ScreenTimeLimitService.shared.timeLimitSelection = activitySelection
-        ScreenTimeLimitService.shared.dailyLimitMinutes = dailyMinutes
-        ScreenTimeLimitService.shared.isEnabled = isEnabled
+        ScreenTimeLimitService.shared.applySettingsAndStartMonitoring(
+            selection: activitySelection,
+            minutes: dailyMinutes,
+            enabled: isEnabled
+        )
     }
 }

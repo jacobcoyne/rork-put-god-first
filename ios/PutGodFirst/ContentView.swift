@@ -48,6 +48,8 @@ struct ContentView: View {
                 }
 
                 let stl = ScreenTimeLimitService.shared
+                stl.refreshLockState()
+                stl.ensureMonitoringActive()
                 if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
                     stl.lockTimeLimitedApps()
                     if DeepLinkManager.shared.pendingAction == nil {

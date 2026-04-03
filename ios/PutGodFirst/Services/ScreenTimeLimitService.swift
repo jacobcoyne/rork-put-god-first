@@ -21,11 +21,13 @@ final class ScreenTimeLimitService {
 
     var isEnabled: Bool {
         didSet {
+            guard isEnabled != oldValue else { return }
             UserDefaults.standard.set(isEnabled, forKey: "screenTimeLimitEnabled")
             sharedDefaults?.set(isEnabled, forKey: "screenTimeLimitEnabled")
             sharedDefaults?.synchronize()
             if isEnabled {
-                startMonitoring()
+                saveTimeLimitSelection()
+                startMonitoringFresh()
             } else {
                 stopMonitoring()
                 unlockTimeLimitedApps()
@@ -35,21 +37,16 @@ final class ScreenTimeLimitService {
 
     var dailyLimitMinutes: Int {
         didSet {
+            guard dailyLimitMinutes != oldValue else { return }
             UserDefaults.standard.set(dailyLimitMinutes, forKey: "screenTimeLimitMinutes")
             sharedDefaults?.set(dailyLimitMinutes, forKey: "screenTimeLimitMinutes")
             sharedDefaults?.synchronize()
-            if isEnabled {
-                startMonitoring()
-            }
         }
     }
 
     var timeLimitSelection: FamilyActivitySelection {
         didSet {
             saveTimeLimitSelection()
-            if isEnabled {
-                startMonitoring()
-            }
         }
     }
 
@@ -72,6 +69,7 @@ final class ScreenTimeLimitService {
 
     private let store = ManagedSettingsStore(named: .screenTimeLimit)
     private let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
+    private var isMonitoringActive: Bool = false
 
     var hasTimeLimitAppsSelected: Bool {
         !timeLimitSelection.applicationTokens.isEmpty || !timeLimitSelection.categoryTokens.isEmpty
@@ -97,22 +95,66 @@ final class ScreenTimeLimitService {
 
         if isEnabled && hasTimeLimitAppsSelected {
             clearStaleLockData()
-            startMonitoring()
+            ensureMonitoringActive()
         }
     }
 
-    func startMonitoring() {
+    func applySettingsAndStartMonitoring(selection: FamilyActivitySelection, minutes: Int, enabled: Bool) {
+        let selectionChanged = selection.applicationTokens != timeLimitSelection.applicationTokens ||
+            selection.categoryTokens != timeLimitSelection.categoryTokens
+        let minutesChanged = minutes != dailyLimitMinutes
+        let enabledChanged = enabled != isEnabled
+
+        timeLimitSelection = selection
+        dailyLimitMinutes = minutes
+
+        UserDefaults.standard.set(minutes, forKey: "screenTimeLimitMinutes")
+        sharedDefaults?.set(minutes, forKey: "screenTimeLimitMinutes")
+        UserDefaults.standard.set(enabled, forKey: "screenTimeLimitEnabled")
+        sharedDefaults?.set(enabled, forKey: "screenTimeLimitEnabled")
+        saveTimeLimitSelection()
+        sharedDefaults?.synchronize()
+
+        isEnabled = enabled
+
+        if !enabled {
+            stopMonitoring()
+            unlockTimeLimitedApps()
+            return
+        }
+
+        guard hasTimeLimitAppsSelected else { return }
+
+        if selectionChanged || minutesChanged || enabledChanged || !isMonitoringActive {
+            startMonitoringFresh()
+        }
+    }
+
+    func ensureMonitoringActive() {
+        guard isEnabled else { return }
+        guard hasTimeLimitAppsSelected else { return }
+        guard ScreenTimeService.shared.isAuthorized else { return }
+
+        if !isMonitoringActive {
+            startMonitoringFresh()
+        }
+    }
+
+    private func startMonitoringFresh() {
         guard ScreenTimeService.shared.isAuthorized else { return }
         guard hasTimeLimitAppsSelected else { return }
+
+        saveTimeLimitSelection()
+        sharedDefaults?.synchronize()
 
         let center = DeviceActivityCenter()
         center.stopMonitoring([.screenTimeLimit])
 
         let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
             repeats: true,
-            warningTime: nil
+            warningTime: DateComponents(minute: 1)
         )
 
         let event = DeviceActivityEvent(
@@ -128,12 +170,21 @@ final class ScreenTimeLimitService {
                 during: schedule,
                 events: [.timeLimitReached: event]
             )
-        } catch {}
+            isMonitoringActive = true
+            sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
+            sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "screenTimeLimitMonitoringStarted")
+            sharedDefaults?.synchronize()
+        } catch {
+            isMonitoringActive = false
+        }
     }
 
     func stopMonitoring() {
         let center = DeviceActivityCenter()
         center.stopMonitoring([.screenTimeLimit])
+        isMonitoringActive = false
+        sharedDefaults?.set(false, forKey: "screenTimeLimitMonitoringActive")
+        sharedDefaults?.synchronize()
     }
 
     func lockTimeLimitedApps() {
@@ -179,6 +230,22 @@ final class ScreenTimeLimitService {
         }
         let unlockDate = Date(timeIntervalSince1970: timestamp)
         return Calendar.current.isDateInToday(unlockDate)
+    }
+
+    func refreshLockState() {
+        sharedDefaults?.synchronize()
+        let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
+        let isToday = isTimeLimitLockFromToday()
+        if locked && isToday && !wasTimeLimitUnlockedToday() {
+            let apps = timeLimitSelection.applicationTokens
+            let categories = timeLimitSelection.categoryTokens
+            if !apps.isEmpty {
+                store.shield.applications = apps
+            }
+            if !categories.isEmpty {
+                store.shield.applicationCategories = .specific(categories)
+            }
+        }
     }
 
     private func isTimeLimitLockFromToday() -> Bool {
