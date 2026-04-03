@@ -90,10 +90,35 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     private func forceReblockIfNeeded() {
         forceGodFirstModeOn()
         sharedDefaults?.set(true, forKey: "godFirstModeEnrolled")
+        clearStaleUnlockData()
         sharedDefaults?.synchronize()
         if !hasCompletedToday && !wasScriptureUnlockedToday {
             applyShields()
         }
+    }
+
+    private func clearStaleUnlockData() {
+        sharedDefaults?.synchronize()
+        if let ts = sharedDefaults?.double(forKey: "lastCompletedTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if !Calendar.current.isDateInToday(d) {
+                sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
+            }
+        }
+        if let ts = sharedDefaults?.double(forKey: "lastScriptureUnlockTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if !Calendar.current.isDateInToday(d) {
+                sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
+            }
+        }
+        sharedDefaults?.synchronize()
+    }
+
+    private func forcePreMidnightLock() {
+        forceGodFirstModeOn()
+        sharedDefaults?.set(true, forKey: "godFirstModeEnrolled")
+        sharedDefaults?.synchronize()
+        applyShields()
     }
 
     private func handleBlockingCheck(for activity: DeviceActivityName, isStart: Bool) {
@@ -103,8 +128,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let isEarlyMorning = activity.rawValue == "godFirst.earlyMorningBackup"
         let isPreDawn = activity.rawValue == "godFirst.preDawnBackup"
         let isLateNight = activity.rawValue == "godFirst.lateNightPrep"
+        let isPreMidnight = activity.rawValue == "godFirst.preMidnightLock"
 
         let shouldForceOn = isGodFirstModeActive || isGodFirstModeEnrolled || hasAppsSelected
+
+        if isPreMidnight && isStart {
+            guard shouldForceOn else { return }
+            forcePreMidnightLock()
+            return
+        }
 
         if isMidnight && isStart {
             guard shouldForceOn else { return }
@@ -150,6 +182,16 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
         sharedDefaults?.synchronize()
+
+        let isLateNight = activity.rawValue == "godFirst.lateNightPrep"
+        let isPreMidnight = activity.rawValue == "godFirst.preMidnightLock"
+        let shouldForceOn = isGodFirstModeActive || isGodFirstModeEnrolled || hasAppsSelected
+
+        if (isLateNight || isPreMidnight) && shouldForceOn {
+            forcePreMidnightLock()
+            return
+        }
+
         guard isGodFirstModeActive || isGodFirstModeEnrolled else { return }
 
         if wasScriptureUnlockedToday { return }

@@ -9,6 +9,7 @@ nonisolated extension DeviceActivityName {
     static let preDawnBackup = Self("godFirst.preDawnBackup")
     static let morningBackup = Self("godFirst.morningBackup")
     static let lateNightPrep = Self("godFirst.lateNightPrep")
+    static let preMidnightLock = Self("godFirst.preMidnightLock")
 }
 
 nonisolated extension ManagedSettingsStore.Name {
@@ -85,6 +86,7 @@ final class ScreenTimeService {
             if godFirstModeEnrolled && !godFirstModeActive {
                 godFirstModeActive = true
             }
+            clearStaleUnlockData()
             if !checkHasCompletedToday() && !wasScriptureUnlockedToday() {
                 blockApps()
             } else if isBlocking {
@@ -191,6 +193,7 @@ final class ScreenTimeService {
 
         refreshAuthStatus()
         forceReloadSelection()
+        clearStaleUnlockData()
 
         if isManualFocusLockActive() {
             if !isBlocking {
@@ -288,16 +291,17 @@ final class ScreenTimeService {
 
         let allActivities: [DeviceActivityName] = [
             .midnightReblock, .earlyMorningBackup, .preDawnBackup,
-            .morningBackup, .lateNightPrep
+            .morningBackup, .lateNightPrep, .preMidnightLock
         ]
         center.stopMonitoring(allActivities)
 
         let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
-            (.midnightReblock,     0,  0,  0, 30),
-            (.earlyMorningBackup,  3,  0,  3, 30),
-            (.preDawnBackup,       5,  0,  5, 30),
-            (.morningBackup,       7,  0,  7, 30),
-            (.lateNightPrep,      23, 30, 23, 55),
+            (.preMidnightLock,     23, 50, 23, 58),
+            (.midnightReblock,      0,  0,  0, 30),
+            (.earlyMorningBackup,   3,  0,  3, 30),
+            (.preDawnBackup,        5,  0,  5, 30),
+            (.morningBackup,        7,  0,  7, 30),
+            (.lateNightPrep,       23, 30, 23, 49),
         ]
 
         for (name, startH, startM, endH, endM) in schedules {
@@ -317,8 +321,26 @@ final class ScreenTimeService {
         let center = DeviceActivityCenter()
         center.stopMonitoring([
             .midnightReblock, .earlyMorningBackup, .preDawnBackup,
-            .morningBackup, .lateNightPrep
+            .morningBackup, .lateNightPrep, .preMidnightLock
         ])
+    }
+
+    private func clearStaleUnlockData() {
+        sharedDefaults?.synchronize()
+        if let ts = sharedDefaults?.double(forKey: "lastCompletedTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if !Calendar.current.isDateInToday(d) {
+                sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
+                sharedDefaults?.synchronize()
+            }
+        }
+        if let ts = sharedDefaults?.double(forKey: "lastScriptureUnlockTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if !Calendar.current.isDateInToday(d) {
+                sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
+                sharedDefaults?.synchronize()
+            }
+        }
     }
 
     func scheduleMidnightReblock() {
