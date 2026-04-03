@@ -120,6 +120,7 @@ struct LatinCrossShape: Shape {
 struct MainTabView: View {
     @Bindable var viewModel: AppViewModel
     @State private var selectedTab: Int = 0
+    @State private var showTimeLimitChallenge: Bool = false
 
     var body: some View {
         ZStack {
@@ -160,6 +161,12 @@ struct MainTabView: View {
                     selectedTab = 0
                 }
             }
+            .onChange(of: viewModel.pendingTimeLimitUnlock) { _, newValue in
+                if newValue {
+                    viewModel.pendingTimeLimitUnlock = false
+                    presentTimeLimitChallenge()
+                }
+            }
 
             if viewModel.showCompletionPopup {
                 CompletionPopup(viewModel: viewModel) {
@@ -170,6 +177,23 @@ struct MainTabView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 .zIndex(100)
             }
+        }
+        .sheet(isPresented: $showTimeLimitChallenge) {
+            TimeLimitChallengeView {
+                ScreenTimeLimitService.shared.unlockWithChallenge()
+                ScreenTimeService.shared.refreshBlockingState()
+            }
+        }
+        .onAppear {
+            if ScreenTimeLimitService.shared.isTimeLimitLocked && !ScreenTimeLimitService.shared.wasTimeLimitUnlockedToday() {
+                presentTimeLimitChallenge()
+            }
+        }
+    }
+
+    private func presentTimeLimitChallenge() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            showTimeLimitChallenge = true
         }
     }
 }

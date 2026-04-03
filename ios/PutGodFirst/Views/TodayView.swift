@@ -23,7 +23,7 @@ struct TodayView: View {
     @State private var lockRotation: Double = 0
     @State private var lockScale: Double = 1.0
     @State private var showAppBlockingFromGodFirst: Bool = false
-    @State private var showTimeLimitChallenge: Bool = false
+
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
 
@@ -262,18 +262,7 @@ struct TodayView: View {
         .sheet(isPresented: $showProgressDetail) {
             ProgressDetailSheet(viewModel: viewModel)
         }
-        .sheet(isPresented: $showTimeLimitChallenge) {
-            TimeLimitChallengeView {
-                ScreenTimeLimitService.shared.unlockWithChallenge()
-                ScreenTimeService.shared.refreshBlockingState()
-            }
-        }
-        .onChange(of: viewModel.pendingTimeLimitUnlock) { _, newValue in
-            if newValue {
-                viewModel.pendingTimeLimitUnlock = false
-                presentTimeLimitChallenge()
-            }
-        }
+
         .sheet(isPresented: $showAppBlockingFromGodFirst) {
             GodFirstModeSetupSheet {
                 if ScreenTimeService.shared.hasAppsSelected {
@@ -1636,11 +1625,7 @@ struct TodayView: View {
     // MARK: - Helpers
 
     private func handlePendingActions() {
-        if viewModel.pendingTimeLimitUnlock {
-            viewModel.pendingTimeLimitUnlock = false
-            presentTimeLimitChallenge()
-            return
-        }
+
         if viewModel.pendingScriptureUnlock {
             viewModel.pendingScriptureUnlock = false
             presentScriptureUnlock()
@@ -1664,22 +1649,14 @@ struct TodayView: View {
                     showDevotional = true
                 }
             case .timeLimitUnlock:
-                presentTimeLimitChallenge()
+                break
             }
         }
 
-        if ScreenTimeLimitService.shared.isTimeLimitLocked && !ScreenTimeLimitService.shared.wasTimeLimitUnlockedToday() {
-            presentTimeLimitChallenge()
-        }
+
     }
 
-    private func presentTimeLimitChallenge() {
-        let anySheetOpen = showDevotional || showPrayerSetup || showChat || showVerseExpanded || showDevotionalExpanded || showDeclarationExpanded || showProgressDetail || showAppBlockingFromGodFirst || showScriptureUnlock
-        let delay: TimeInterval = anySheetOpen ? 0.6 : 0.3
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            showTimeLimitChallenge = true
-        }
-    }
+
 
     private func presentScriptureUnlock() {
         let delay: TimeInterval = (showDevotional || showPrayerSetup || showChat || showVerseExpanded || showDevotionalExpanded || showDeclarationExpanded || showProgressDetail || showAppBlockingFromGodFirst) ? 0.6 : 0.3
