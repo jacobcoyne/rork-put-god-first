@@ -85,7 +85,7 @@ struct ContentView: View {
         case .scriptureUnlock:
             viewModel.pendingScriptureUnlock = true
         case .openSession:
-            break
+            viewModel.pendingOpenSession = true
         }
     }
 }

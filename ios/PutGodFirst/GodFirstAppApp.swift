@@ -13,6 +13,21 @@ struct GodFirstAppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onOpenURL { url in
+                    handleDeepLink(url)
+                }
+        }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "putgodfirst" else { return }
+        switch url.host {
+        case "scripture-unlock":
+            DeepLinkManager.shared.pendingAction = .scriptureUnlock
+        case "start-session":
+            DeepLinkManager.shared.pendingAction = .openSession
+        default:
+            break
         }
     }
 
@@ -85,6 +100,13 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
             return
         }
 
+        if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
+            await MainActor.run {
+                UIApplication.shared.open(url)
+            }
+            return
+        }
+
         if categoryId == "SHIELD_TAP" || categoryId == "OPEN_APP" {
             let isPostSession = userInfo["isPostSession"] as? Bool ?? false
 
@@ -101,6 +123,15 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        let userInfo = notification.request.content.userInfo
+
+        if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
+            await MainActor.run {
+                UIApplication.shared.open(url)
+            }
+            return []
+        }
+
         return [.banner, .sound]
     }
 }

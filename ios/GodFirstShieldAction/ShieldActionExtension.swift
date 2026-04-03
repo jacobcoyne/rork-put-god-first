@@ -19,21 +19,29 @@ class ShieldActionExtension: ShieldActionDelegate {
         let isPostSession = hasCompletedToday
 
         if isPostSession {
-            content.title = "Recite Scripture to Unlock \u{1F4D6}"
+            content.title = "Recite Scripture to Unlock 📖"
             content.body = "Tap here to recite a verse and unlock your apps."
-            content.userInfo = ["isPostSession": true]
+            content.userInfo = [
+                "isPostSession": true,
+                "deepLink": "putgodfirst://scripture-unlock"
+            ]
         } else {
-            content.title = "Put God First \u{1F64F}"
-            content.body = "Tap here to open the app and start your session."
-            content.userInfo = ["isPostSession": false]
+            content.title = "Put God First 🙏"
+            content.body = "Tap here to start your session with God."
+            content.userInfo = [
+                "isPostSession": false,
+                "deepLink": "putgodfirst://start-session"
+            ]
         }
         content.sound = .default
         content.categoryIdentifier = "SHIELD_TAP"
+        content.interruptionLevel = .timeSensitive
+        content.relevanceScore = 1.0
 
         let request = UNNotificationRequest(
             identifier: "godFirst.openApp.\(UUID().uuidString)",
             content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
     }

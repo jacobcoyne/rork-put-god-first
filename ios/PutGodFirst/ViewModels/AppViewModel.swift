@@ -56,6 +56,7 @@ final class AppViewModel {
     var showCompletionPopup: Bool = false
     var showAppBlockingSetup: Bool = false
     var pendingScriptureUnlock: Bool = false
+    var pendingOpenSession: Bool = false
     var selectedPrayerMode: PrayerMode = .pickPrayer
     var hasSeenLockTimeSetup: Bool {
         didSet { UserDefaults.standard.set(hasSeenLockTimeSetup, forKey: "hasSeenLockTimeSetup") }

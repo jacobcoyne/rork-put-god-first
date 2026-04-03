@@ -191,6 +191,16 @@ struct TodayView: View {
                 }
             }
         }
+        .onChange(of: viewModel.pendingOpenSession) { _, newValue in
+            if newValue {
+                viewModel.pendingOpenSession = false
+                if !viewModel.hasCompletedToday {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showDevotional = true
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $showVerseExpanded) {
             VerseExpandedSheet(verse: content.verse)
         }
