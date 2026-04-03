@@ -4,18 +4,11 @@ import ManagedSettings
 import DeviceActivity
 
 nonisolated extension DeviceActivityName {
-    static let dailyBlock = Self("godFirst.dailyBlock")
-    static let morningEnforce = Self("godFirst.morningEnforce")
-    static let middayEnforce = Self("godFirst.middayEnforce")
-    static let eveningEnforce = Self("godFirst.eveningEnforce")
-
     static let midnightReblock = Self("godFirst.midnightReblock")
-    static let earlyMorning = Self("godFirst.earlyMorning")
-    static let morning = Self("godFirst.morning")
-    static let midday = Self("godFirst.midday")
-    static let afternoon = Self("godFirst.afternoon")
-    static let evening = Self("godFirst.evening")
-    static let lateNight = Self("godFirst.lateNight")
+    static let earlyMorningBackup = Self("godFirst.earlyMorningBackup")
+    static let preDawnBackup = Self("godFirst.preDawnBackup")
+    static let morningBackup = Self("godFirst.morningBackup")
+    static let lateNightPrep = Self("godFirst.lateNightPrep")
 }
 
 nonisolated extension ManagedSettingsStore.Name {
@@ -49,32 +42,30 @@ final class ScreenTimeService {
     }
 
     private let store = ManagedSettingsStore(named: .godFirst)
-    let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
+    private let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
 
     private init() {
+        let standardBlocking = UserDefaults.standard.bool(forKey: "isCurrentlyBlocking")
         let shared = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
         shared?.synchronize()
-
-        let standardBlocking = UserDefaults.standard.bool(forKey: "isCurrentlyBlocking")
         let sharedBlocking = shared?.bool(forKey: "isCurrentlyBlocking") ?? false
         isBlocking = standardBlocking || sharedBlocking
         if sharedBlocking && !standardBlocking {
             UserDefaults.standard.set(true, forKey: "isCurrentlyBlocking")
         }
-
-        godFirstModeActive = UserDefaults.standard.bool(forKey: "godFirstModeActive") || (shared?.bool(forKey: "godFirstModeActive") ?? false)
+        godFirstModeActive = UserDefaults.standard.bool(forKey: "godFirstModeActive")
         let udEnrolled = UserDefaults.standard.bool(forKey: "godFirstModeEnrolled")
         let sharedEnrolled = shared?.bool(forKey: "godFirstModeEnrolled") ?? false
         godFirstModeEnrolled = udEnrolled || sharedEnrolled
 
-        if let data = shared?.data(forKey: "familyActivitySelection"),
+        if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
            let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-            activitySelection = selection
-        } else if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
-                  let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             activitySelection = selection
             shared?.set(data, forKey: "familyActivitySelection")
             shared?.synchronize()
+        } else if let data = shared?.data(forKey: "familyActivitySelection"),
+                  let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activitySelection = selection
         } else {
             activitySelection = FamilyActivitySelection()
         }
@@ -91,12 +82,16 @@ final class ScreenTimeService {
         isAuthorized = (status == .approved)
 
         if (godFirstModeActive || godFirstModeEnrolled) && isAuthorized {
-            if !checkHasCompletedToday() {
+            if godFirstModeEnrolled && !godFirstModeActive {
+                godFirstModeActive = true
+            }
+            if !checkHasCompletedToday() && !wasScriptureUnlockedToday() {
+                blockApps()
+            } else if isBlocking {
                 blockApps()
             }
             scheduleAllMonitoring()
         }
-
     }
 
     func requestAuthorization() async -> Bool {
@@ -204,14 +199,19 @@ final class ScreenTimeService {
             return
         }
 
-        if !godFirstModeActive && !godFirstModeEnrolled {
+        if wasScriptureUnlockedToday() {
             if isBlocking {
                 unblockApps()
             }
             return
         }
 
-        checkNewDayReset()
+        if !godFirstModeActive && !godFirstModeEnrolled {
+            if isBlocking {
+                unblockApps()
+            }
+            return
+        }
 
         if !hasCompletedToday {
             blockApps()
@@ -222,26 +222,6 @@ final class ScreenTimeService {
         }
 
         scheduleAllMonitoring()
-    }
-
-    private func checkNewDayReset() {
-        sharedDefaults?.synchronize()
-        let lastResetTimestamp = sharedDefaults?.double(forKey: "lastMidnightResetTimestamp") ?? 0
-        let needsReset: Bool
-        if lastResetTimestamp == 0 {
-            needsReset = true
-        } else {
-            let lastReset = Date(timeIntervalSince1970: lastResetTimestamp)
-            needsReset = !Calendar.current.isDateInToday(lastReset)
-        }
-
-        if needsReset && (godFirstModeActive || godFirstModeEnrolled) {
-            sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
-            sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
-            sharedDefaults?.set(false, forKey: "manualFocusLockActive")
-            sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "lastMidnightResetTimestamp")
-            sharedDefaults?.synchronize()
-        }
     }
 
     func wasScriptureUnlockedToday() -> Bool {
@@ -301,88 +281,44 @@ final class ScreenTimeService {
         }
     }
 
-    private var allActivityNames: [DeviceActivityName] {
-        [
-            .dailyBlock, .morningEnforce, .middayEnforce, .eveningEnforce,
-            .midnightReblock, .earlyMorning, .morning,
-            .midday, .afternoon, .evening, .lateNight
-        ]
-    }
-
     func scheduleAllMonitoring() {
         guard isAuthorized else { return }
         guard godFirstModeActive || godFirstModeEnrolled || hasAppsSelected else { return }
         let center = DeviceActivityCenter()
 
-        center.stopMonitoring(allActivityNames)
+        let allActivities: [DeviceActivityName] = [
+            .midnightReblock, .earlyMorningBackup, .preDawnBackup,
+            .morningBackup, .lateNightPrep
+        ]
+        center.stopMonitoring(allActivities)
 
-        do {
-            try center.startMonitoring(.midnightReblock, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 0, minute: 0),
-                intervalEnd: DateComponents(hour: 3, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 5)
-            ))
-        } catch {}
+        let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
+            (.midnightReblock,     0,  0,  0, 30),
+            (.earlyMorningBackup,  3,  0,  3, 30),
+            (.preDawnBackup,       5,  0,  5, 30),
+            (.morningBackup,       7,  0,  7, 30),
+            (.lateNightPrep,      23, 30, 23, 55),
+        ]
 
-        do {
-            try center.startMonitoring(.earlyMorning, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 4, minute: 0),
-                intervalEnd: DateComponents(hour: 5, minute: 59),
+        for (name, startH, startM, endH, endM) in schedules {
+            let schedule = DeviceActivitySchedule(
+                intervalStart: DateComponents(hour: startH, minute: startM, second: 0),
+                intervalEnd: DateComponents(hour: endH, minute: endM, second: 0),
                 repeats: true,
-                warningTime: DateComponents(minute: 3)
-            ))
-        } catch {}
-
-        do {
-            try center.startMonitoring(.morningEnforce, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 6, minute: 0),
-                intervalEnd: DateComponents(hour: 9, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 3)
-            ))
-        } catch {}
-
-        do {
-            try center.startMonitoring(.middayEnforce, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 10, minute: 0),
-                intervalEnd: DateComponents(hour: 13, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 3)
-            ))
-        } catch {}
-
-        do {
-            try center.startMonitoring(.afternoon, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 14, minute: 0),
-                intervalEnd: DateComponents(hour: 17, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 3)
-            ))
-        } catch {}
-
-        do {
-            try center.startMonitoring(.eveningEnforce, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 18, minute: 0),
-                intervalEnd: DateComponents(hour: 20, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 3)
-            ))
-        } catch {}
-
-        do {
-            try center.startMonitoring(.lateNight, during: DeviceActivitySchedule(
-                intervalStart: DateComponents(hour: 21, minute: 0),
-                intervalEnd: DateComponents(hour: 23, minute: 59),
-                repeats: true,
-                warningTime: DateComponents(minute: 5)
-            ))
-        } catch {}
+                warningTime: nil
+            )
+            do {
+                try center.startMonitoring(name, during: schedule)
+            } catch {}
+        }
     }
 
     func stopAllMonitoring() {
         let center = DeviceActivityCenter()
-        center.stopMonitoring(allActivityNames)
+        center.stopMonitoring([
+            .midnightReblock, .earlyMorningBackup, .preDawnBackup,
+            .morningBackup, .lateNightPrep
+        ])
     }
 
     func scheduleMidnightReblock() {
@@ -396,5 +332,4 @@ final class ScreenTimeService {
             sharedDefaults?.synchronize()
         }
     }
-
 }

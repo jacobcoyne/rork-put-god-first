@@ -1,6 +1,5 @@
 import SwiftUI
 import UserNotifications
-import BranchSDK
 
 @main
 struct GodFirstAppApp: App {
@@ -59,22 +58,7 @@ struct GodFirstAppApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-        AppsFlyerService.shared.configure()
-        BranchService.shared.configure()
-        BranchService.shared.initSession(launchOptions: launchOptions)
         return true
-    }
-
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        AppsFlyerService.shared.start()
-    }
-
-    func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        return BranchService.shared.handleURL(url)
-    }
-
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        return BranchService.shared.handleUserActivity(userActivity)
     }
 }
 
@@ -93,7 +77,7 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
                 let screen = ScreenTimeService.shared
                 if screen.godFirstModeEnrolled || screen.godFirstModeActive {
                     screen.godFirstModeActive = true
-                    if !screen.checkHasCompletedToday() {
+                    if !screen.checkHasCompletedToday() && !screen.wasScriptureUnlockedToday() {
                         screen.blockApps()
                     }
                 }
@@ -101,28 +85,16 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
             return
         }
 
-        let isUnlockChooser = userInfo["unlockChooser"] as? Bool ?? false
-        let isOpenSession = userInfo["openSession"] as? Bool ?? false
+        if categoryId == "SHIELD_TAP" || categoryId == "OPEN_APP" {
+            let isPostSession = userInfo["isPostSession"] as? Bool ?? false
 
-        if isOpenSession {
-            await MainActor.run {
-                DeepLinkManager.shared.pendingAction = .openSession
-            }
-        } else if categoryId == "SHIELD_TAP" || categoryId == "OPEN_APP" {
-            if isUnlockChooser {
+            if isPostSession || actionId == "RECITE_SCRIPTURE" || (isDefaultTap && isPostSession) {
                 await MainActor.run {
                     DeepLinkManager.shared.pendingAction = .scriptureUnlock
                 }
             } else {
-                let isPostSession = userInfo["isPostSession"] as? Bool ?? false
-                if isPostSession || actionId == "RECITE_SCRIPTURE" {
-                    await MainActor.run {
-                        DeepLinkManager.shared.pendingAction = .scriptureUnlock
-                    }
-                } else {
-                    await MainActor.run {
-                        DeepLinkManager.shared.pendingAction = .openSession
-                    }
+                await MainActor.run {
+                    DeepLinkManager.shared.pendingAction = .openSession
                 }
             }
         }

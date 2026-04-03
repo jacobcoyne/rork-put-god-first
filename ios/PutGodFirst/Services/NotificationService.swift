@@ -84,7 +84,7 @@ enum NotificationService {
         let center = UNUserNotificationCenter.current()
 
         center.removePendingNotificationRequests(withIdentifiers: [
-            "relock-midnight", "relock-3am", "relock-5am", "relock-6am"
+            "relock-midnight", "relock-3am", "relock-5am"
         ])
 
         guard ScreenTimeService.shared.godFirstModeEnrolled || ScreenTimeService.shared.godFirstModeActive else { return }
@@ -93,7 +93,6 @@ enum NotificationService {
             ("relock-midnight", 0, 1),
             ("relock-3am", 3, 0),
             ("relock-5am", 5, 0),
-            ("relock-6am", 6, 0),
         ]
 
         for (id, hour, minute) in times {
@@ -116,7 +115,7 @@ enum NotificationService {
     static func cancelRelockNotifications() {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [
-            "relock-midnight", "relock-3am", "relock-5am", "relock-6am"
+            "relock-midnight", "relock-3am", "relock-5am"
         ])
     }
 

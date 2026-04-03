@@ -250,8 +250,6 @@
 			packageProductDependencies = (
 				AA0001022E9EAD3200EA8BCF /* RevenueCat */,
 				AA0001032E9EAD3200EA8BCF /* RevenueCatUI */,
-				AF0001022E9EAD3200EA8BCF /* AppsFlyerLib-Static */,
-				BB0001022E9EAD3200EA8BCF /* BranchSDK */,
 			);
 			productName = PutGodFirst;
 			productReference = 105FC57A2E9EAD3100EA8BCF /* PutGodFirst.app */;
@@ -381,40 +379,27 @@
 				TargetAttributes = {
 					105FC5792E9EAD3100EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 					};
 					105FC5882E9EAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 						TestTargetID = 105FC5792E9EAD3100EA8BCF;
 					};
 					105FC5922E9EAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 						TestTargetID = 105FC5792E9EAD3100EA8BCF;
 					};
 					AA1001032E9EAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 					};
 					AA2001032E9EAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 					};
 					BB1001032E9EAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
-						DevelopmentTeam = NHXP3MWRDJ;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
 			buildConfigurationList = 105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PutGodFirst" */;
-			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -423,13 +408,11 @@
 			);
 			mainGroup = 105FC5712E9EAD3100EA8BCF;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */,
-				AF0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static.git" */,
-				BB0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "ios-branch-sdk-spm.git" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 105FC57B2E9EAD3100EA8BCF /* Products */;
+			packageReferences = (
+				AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -597,7 +580,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -663,7 +646,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -693,14 +676,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PutGodFirst/GodFirstApp.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
 				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
+				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
 				INFOPLIST_KEY_CFBundleDisplayName = "God First";
 				INFOPLIST_KEY_CFBundleName = "God First";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -711,9 +693,9 @@
 				INFOPLIST_KEY_RorkAPIBaseURL = "$(EXPO_PUBLIC_RORK_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -722,14 +704,13 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Put God First";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -741,14 +722,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = PutGodFirst/GodFirstApp.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
 				INFOPLIST_KEY_AnthropicAPIKey = "$(EXPO_PUBLIC_ANTHROPIC_API_KEY)";
+				INFOPLIST_KEY_APIBibleKey = "$(EXPO_PUBLIC_API_BIBLE_KEY)";
 				INFOPLIST_KEY_CFBundleDisplayName = "God First";
 				INFOPLIST_KEY_CFBundleName = "God First";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -759,9 +739,9 @@
 				INFOPLIST_KEY_RorkAPIBaseURL = "$(EXPO_PUBLIC_RORK_API_BASE_URL)";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIBackgroundModes = audio;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -770,7 +750,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Put God First";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -787,9 +766,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
@@ -809,9 +788,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
@@ -830,9 +809,9 @@
 		105FC5A42E9EAD3200EA8BCF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.uitests";
@@ -850,9 +829,9 @@
 		105FC5A52E9EAD3200EA8BCF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.uitests";
@@ -871,10 +850,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstShieldConfig/GodFirstShieldConfig.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstShieldConfig/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstShieldConfig;
@@ -888,7 +866,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldConfig";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstShieldConfig_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -900,10 +877,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstShieldConfig/GodFirstShieldConfig.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstShieldConfig/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstShieldConfig;
@@ -917,7 +893,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldConfig";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstShieldConfig_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -929,10 +904,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstShieldAction/GodFirstShieldAction.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstShieldAction/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstShieldAction;
@@ -946,7 +920,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldAction";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstShieldAction_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -958,10 +931,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstShieldAction/GodFirstShieldAction.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstShieldAction/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstShieldAction;
@@ -975,7 +947,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldAction";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstShieldAction_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -987,10 +958,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstDeviceMonitor/GodFirstDeviceMonitor.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstDeviceMonitor/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstDeviceMonitor;
@@ -1004,7 +974,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstDeviceMonitor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstDeviceMonitor_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1016,10 +985,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = GodFirstDeviceMonitor/GodFirstDeviceMonitor.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NHXP3MWRDJ;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GodFirstDeviceMonitor/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = GodFirstDeviceMonitor;
@@ -1033,7 +1001,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstDeviceMonitor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = GodFirstDeviceMonitor_AppStore;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -1110,7 +1077,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */ = {
+		AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
 			requirement = {
@@ -1118,44 +1085,18 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		AF0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static.git" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.17.0;
-			};
-		};
-		BB0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "ios-branch-sdk-spm.git" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/BranchMetrics/ios-branch-sdk-spm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		AA0001022E9EAD3200EA8BCF /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */;
+			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
 		AA0001032E9EAD3200EA8BCF /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm.git" */;
+			package = AA0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
-		};
-		AF0001022E9EAD3200EA8BCF /* AppsFlyerLib-Static */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AF0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static.git" */;
-			productName = "AppsFlyerLib-Static";
-		};
-		BB0001022E9EAD3200EA8BCF /* BranchSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BB0001012E9EAD3200EA8BCF /* XCRemoteSwiftPackageReference "ios-branch-sdk-spm.git" */;
-			productName = BranchSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

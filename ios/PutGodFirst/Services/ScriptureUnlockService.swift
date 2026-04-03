@@ -33,5 +33,6 @@ final class ScriptureUnlockService {
     func unlockAppsWithScripture() {
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "lastScriptureUnlockTimestamp")
         sharedDefaults?.synchronize()
+        ScreenTimeService.shared.unblockApps()
     }
 }

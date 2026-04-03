@@ -40,15 +40,14 @@ struct ContentView: View {
                 st.refreshBlockingState()
                 viewModel.checkDailyReset()
 
-                if st.isAuthorized && (st.godFirstModeActive || st.godFirstModeEnrolled) {
+                if st.godFirstModeActive && st.isAuthorized {
                     st.scheduleAllMonitoring()
-                    if !viewModel.hasCompletedToday {
+                    if !viewModel.hasCompletedToday && !st.wasScriptureUnlockedToday() {
                         st.blockApps()
                     }
                 }
 
                 NotificationService.cancelTodayNotifications()
-                NotificationService.scheduleMidnightRelockNotifications()
                 handlePendingDeepLink()
             }
         }
@@ -69,7 +68,7 @@ struct ContentView: View {
     private func ensureInitialLocking() {
         let st = ScreenTimeService.shared
         if st.isAuthorized && st.hasAppsSelected && (st.godFirstModeActive || st.godFirstModeEnrolled) {
-            if !viewModel.hasCompletedToday {
+            if !viewModel.hasCompletedToday && !st.wasScriptureUnlockedToday() {
                 st.blockApps()
                 st.scheduleAllMonitoring()
             } else {
@@ -83,8 +82,10 @@ struct ContentView: View {
     private func handlePendingDeepLink() {
         guard let action = DeepLinkManager.shared.consumeAction() else { return }
         switch action {
-        case .scriptureUnlock, .openSession:
+        case .scriptureUnlock:
             viewModel.pendingScriptureUnlock = true
+        case .openSession:
+            break
         }
     }
 }

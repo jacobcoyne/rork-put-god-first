@@ -5,7 +5,6 @@ struct TodayView: View {
     @State private var showDevotional: Bool = false
     @State private var showPrayerSetup: Bool = false
     @State private var showScriptureUnlock: Bool = false
-    @State private var showUnlockChooser: Bool = false
     @State private var appearAnimation: Bool = false
     @State private var glowPhase: Bool = false
     @State private var shieldGlow: Bool = false
@@ -188,11 +187,7 @@ struct TodayView: View {
             if newValue {
                 viewModel.pendingScriptureUnlock = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    if viewModel.hasCompletedToday {
-                        showUnlockChooser = true
-                    } else {
-                        showDevotional = true
-                    }
+                    showScriptureUnlock = true
                 }
             }
         }
@@ -232,15 +227,6 @@ struct TodayView: View {
         }
         .sheet(isPresented: $showScriptureUnlock) {
             ScriptureUnlockView {
-                ScreenTimeService.shared.refreshBlockingState()
-                godFirstModeToggle = ScreenTimeService.shared.godFirstModeActive
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    animateLockToggle()
-                }
-            }
-        }
-        .sheet(isPresented: $showUnlockChooser) {
-            ScreenTimeUnlockChooserView {
                 ScreenTimeService.shared.refreshBlockingState()
                 godFirstModeToggle = ScreenTimeService.shared.godFirstModeActive
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -399,11 +385,7 @@ struct TodayView: View {
         }
 
         if isAppsLocked {
-            if viewModel.hasCompletedToday {
-                showUnlockChooser = true
-            } else {
-                showDevotional = true
-            }
+            showScriptureUnlock = true
         } else {
             ScreenTimeService.shared.manualLockForFocus()
             godFirstModeToggle = true
@@ -1637,17 +1619,11 @@ struct TodayView: View {
             switch action {
             case .scriptureUnlock:
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    if viewModel.hasCompletedToday {
-                        showUnlockChooser = true
-                    } else {
-                        showDevotional = true
-                    }
+                    showScriptureUnlock = true
                 }
             case .openSession:
                 if !viewModel.hasCompletedToday {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        showDevotional = true
-                    }
+                    showDevotional = true
                 }
             }
         }

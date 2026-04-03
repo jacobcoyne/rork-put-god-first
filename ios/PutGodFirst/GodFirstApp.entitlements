@@ -7,17 +7,10 @@
 		<string>Default</string>
 	</array>
 	<key>com.apple.developer.family-controls</key>
-	<array>
-		<string>distribution</string>
-	</array>
+	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.app.rork.god-first-app-c1nigyo</string>
-	</array>
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:$(EXPO_PUBLIC_BRANCH_LINK_DOMAIN)</string>
-		<string>applinks:$(EXPO_PUBLIC_BRANCH_LINK_DOMAIN).alternate</string>
 	</array>
 </dict>
 </plist>

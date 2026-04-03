@@ -13,63 +13,63 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     private let messages: [ShieldMessage] = [
         ShieldMessage(
             iconName: "flame.fill",
-            title: "Feed Your Soul First",
-            subtitle: "Your spirit is hungry \u{2014} nourish it with God\u{2019}s Word before you feed the scroll. You got this!"
+            title: "\u{1F525} Feed your soul first!",
+            subtitle: "Your spirit is hungry \u{1F37D}\u{FE0F} Nourish it with God\u{2019}s Word before you feed the scroll. You got this! \u{1F4AA}"
         ),
         ShieldMessage(
             iconName: "book.fill",
-            title: "Hold Up!",
-            subtitle: "This app isn\u{2019}t going anywhere. But your time with God? That\u{2019}s the good stuff. Go get it!"
+            title: "\u{1F6D1} Hold up!",
+            subtitle: "This app isn\u{2019}t going anywhere \u{1F60C} But your time with God? That\u{2019}s the good stuff. Go get it! \u{2728}"
         ),
         ShieldMessage(
             iconName: "crown.fill",
-            title: "King Things First",
-            subtitle: "Seek first His kingdom and everything else falls into place. Matthew 6:33"
+            title: "\u{1F451} King things first!",
+            subtitle: "Seek first His kingdom and everything else falls into place \u{1F64F} Matthew 6:33. The scroll can wait! \u{1F4F1}"
         ),
         ShieldMessage(
             iconName: "heart.circle.fill",
-            title: "Guard Your Heart",
-            subtitle: "Above all else, guard your heart \u{2014} Proverbs 4:23. God\u{2019}s got better plans for your day!"
+            title: "\u{1F49B} Guard your heart!",
+            subtitle: "Above all else, guard your heart \u{2014} Proverbs 4:23 \u{1F6E1}\u{FE0F} God\u{2019}s got better plans for your morning! \u{2600}\u{FE0F}"
         ),
         ShieldMessage(
             iconName: "sparkles",
-            title: "You\u{2019}re Glowing",
-            subtitle: "Don\u{2019}t dim your light with mindless scrolling. Spend time with God and shine even brighter today!"
+            title: "\u{2728} You\u{2019}re glowing!",
+            subtitle: "Don\u{2019}t dim your light with mindless scrolling \u{1F4F2} Spend time with God and shine even brighter today! \u{1F31F}"
         ),
         ShieldMessage(
             iconName: "sun.max.fill",
-            title: "Rise & Shine",
-            subtitle: "The Son is calling you. Start your day in His presence and watch everything else fall into place."
+            title: "\u{2600}\u{FE0F} Rise & shine!",
+            subtitle: "The Son is calling you \u{1F324}\u{FE0F} Start your day in His presence and watch everything else fall into place \u{1F64C}"
         ),
         ShieldMessage(
             iconName: "drop.fill",
-            title: "Thirsty for Real?",
-            subtitle: "Jesus said: whoever drinks my water will never thirst \u{2014} John 4:14. Way better than your feed!"
+            title: "\u{1F4A7} Thirsty for real?",
+            subtitle: "Jesus said: whoever drinks my water will never thirst \u{1F64F} John 4:14. Way better than your feed! \u{1F602}"
         ),
         ShieldMessage(
             iconName: "leaf.fill",
-            title: "Breathe, Bestie",
-            subtitle: "Be still and know that He is God \u{2014} Psalm 46:10. Choose peace over the noise."
+            title: "\u{1F343} Breathe, bestie",
+            subtitle: "Be still and know that He is God \u{1F54A}\u{FE0F} Psalm 46:10. Take a deep breath and choose peace over the noise \u{1F90D}"
         ),
         ShieldMessage(
             iconName: "star.fill",
-            title: "Choose the Better Part",
-            subtitle: "Mary chose Jesus over distraction and so can you! Luke 10:42. Your future self will thank you."
+            title: "\u{1F31F} Choose the better part!",
+            subtitle: "Mary chose Jesus over distraction and so can you! \u{1F4AA} Luke 10:42. Your future self will thank you \u{1F60A}"
         ),
         ShieldMessage(
             iconName: "figure.walk",
-            title: "Walk by Faith",
-            subtitle: "Not by sight \u{2014} and definitely not by scrolling! 2 Corinthians 5:7. Step toward God first."
+            title: "\u{1F6B6} Walk by faith!",
+            subtitle: "Not by sight \u{1F440} and definitely not by scrolling! 2 Cor 5:7. Step toward God first \u{1F3AF}"
         ),
         ShieldMessage(
             iconName: "hands.sparkles.fill",
-            title: "You\u{2019}re Made for More",
-            subtitle: "God\u{2019}s handiwork doesn\u{2019}t need a feed to feel good \u{2014} Ephesians 2:10. Go spend time with your Creator!"
+            title: "\u{1F64C} You\u{2019}re made for MORE!",
+            subtitle: "God\u{2019}s handiwork doesn\u{2019}t need a feed to feel good \u{1F48E} Ephesians 2:10. Go spend time with your Creator! \u{1F525}"
         ),
         ShieldMessage(
             iconName: "shield.checkered",
-            title: "Armor Up!",
-            subtitle: "Put on the full armor of God! Ephesians 6:11. You\u{2019}re stronger than the urge to scroll."
+            title: "\u{1F6E1}\u{FE0F} Armor up!",
+            subtitle: "Put on the full armor of God! \u{2694}\u{FE0F} Ephesians 6:11. You\u{2019}re stronger than the urge to scroll \u{1F4AA}\u{1F525}"
         ),
     ]
 
@@ -91,69 +91,43 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     private func makeConfiguration() -> ShieldConfiguration {
-        let bgColor = UIColor(red: 0.06, green: 0.04, blue: 0.16, alpha: 1.0)
+        let bgColor = UIColor(red: 0.08, green: 0.06, blue: 0.20, alpha: 1.0)
         let titleColor = UIColor.white
-        let subtitleColor = UIColor(red: 0.82, green: 0.78, blue: 0.92, alpha: 1.0)
+        let subtitleColor = UIColor(red: 0.78, green: 0.74, blue: 0.90, alpha: 1.0)
         let buttonTextColor = UIColor.white
-        let secondaryTextColor = UIColor(red: 0.55, green: 0.52, blue: 0.68, alpha: 1.0)
+        let secondaryTextColor = UIColor(red: 0.6, green: 0.58, blue: 0.72, alpha: 1.0)
 
-        if !hasCompletedToday {
-            let message = currentMessage()
-            let buttonBgColor = UIColor(red: 0.22, green: 0.28, blue: 0.88, alpha: 1.0)
-            let icon = UIImage(systemName: message.iconName)?
-                .withConfiguration(UIImage.SymbolConfiguration(pointSize: 34, weight: .medium))
-                .withTintColor(UIColor(red: 0.52, green: 0.74, blue: 1.0, alpha: 1.0), renderingMode: .alwaysOriginal)
+        if hasCompletedToday {
+            let buttonBgColor = UIColor(red: 0.52, green: 0.35, blue: 0.95, alpha: 1.0)
+            let icon = UIImage(systemName: "mic.fill")?
+                .withTintColor(.white, renderingMode: .alwaysOriginal)
 
             return ShieldConfiguration(
                 backgroundBlurStyle: .systemThickMaterialDark,
                 backgroundColor: bgColor,
                 icon: icon,
-                title: ShieldConfiguration.Label(
-                    text: message.title,
-                    color: titleColor
-                ),
-                subtitle: ShieldConfiguration.Label(
-                    text: message.subtitle + "\n\nComplete your daily session in God First to unlock your apps.",
-                    color: subtitleColor
-                ),
-                primaryButtonLabel: ShieldConfiguration.Label(
-                    text: "Start Session",
-                    color: buttonTextColor
-                ),
+                title: ShieldConfiguration.Label(text: "\u{1F4D6} Recite Scripture to Unlock", color: titleColor),
+                subtitle: ShieldConfiguration.Label(text: "You already put God first today! \u{1F64F} Tap below to recite a verse and unlock your apps. You got this! \u{1F4AA}", color: subtitleColor),
+                primaryButtonLabel: ShieldConfiguration.Label(text: "Recite Scripture \u{1F399}\u{FE0F}", color: buttonTextColor),
                 primaryButtonBackgroundColor: buttonBgColor,
-                secondaryButtonLabel: ShieldConfiguration.Label(
-                    text: "Close App",
-                    color: secondaryTextColor
-                )
+                secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
             )
         }
 
-        let buttonBgColor = UIColor(red: 0.42, green: 0.28, blue: 0.92, alpha: 1.0)
-        let icon = UIImage(systemName: "mic.circle.fill")?
-            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 34, weight: .medium))
-            .withTintColor(UIColor(red: 0.68, green: 0.55, blue: 1.0, alpha: 1.0), renderingMode: .alwaysOriginal)
+        let message = currentMessage()
+        let buttonBgColor = UIColor(red: 0.28, green: 0.32, blue: 0.92, alpha: 1.0)
+        let icon = UIImage(systemName: message.iconName)?
+            .withTintColor(.white, renderingMode: .alwaysOriginal)
 
         return ShieldConfiguration(
             backgroundBlurStyle: .systemThickMaterialDark,
             backgroundColor: bgColor,
             icon: icon,
-            title: ShieldConfiguration.Label(
-                text: "Recite to Unlock",
-                color: titleColor
-            ),
-            subtitle: ShieldConfiguration.Label(
-                text: "Tap below to open God First. Recite a Bible verse or show your open Bible to unlock your apps.",
-                color: subtitleColor
-            ),
-            primaryButtonLabel: ShieldConfiguration.Label(
-                text: "Unlock with Scripture",
-                color: buttonTextColor
-            ),
+            title: ShieldConfiguration.Label(text: message.title, color: titleColor),
+            subtitle: ShieldConfiguration.Label(text: message.subtitle, color: subtitleColor),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Open God First \u{1F64F}", color: buttonTextColor),
             primaryButtonBackgroundColor: buttonBgColor,
-            secondaryButtonLabel: ShieldConfiguration.Label(
-                text: "Close App",
-                color: secondaryTextColor
-            )
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
         )
     }
 

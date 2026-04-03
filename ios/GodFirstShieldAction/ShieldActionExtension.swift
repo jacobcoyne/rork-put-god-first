@@ -16,24 +16,24 @@ class ShieldActionExtension: ShieldActionDelegate {
 
     private func sendOpenAppNotification() {
         let content = UNMutableNotificationContent()
-        content.sound = .default
+        let isPostSession = hasCompletedToday
 
-        if !hasCompletedToday {
-            content.title = "Put God First \u{2728}"
-            content.body = "Tap here to start your daily session and unlock your apps."
-            content.userInfo = ["openSession": true]
-            content.categoryIdentifier = "SHIELD_TAP"
+        if isPostSession {
+            content.title = "Recite Scripture to Unlock \u{1F4D6}"
+            content.body = "Tap here to recite a verse and unlock your apps."
+            content.userInfo = ["isPostSession": true]
         } else {
-            content.title = "Unlock Your Apps \u{1F513}"
-            content.body = "Tap here to recite scripture or show your Bible."
-            content.userInfo = ["unlockChooser": true, "isPostSession": true]
-            content.categoryIdentifier = "SHIELD_TAP"
+            content.title = "Put God First \u{1F64F}"
+            content.body = "Tap here to open the app and start your session."
+            content.userInfo = ["isPostSession": false]
         }
+        content.sound = .default
+        content.categoryIdentifier = "SHIELD_TAP"
 
         let request = UNNotificationRequest(
             identifier: "godFirst.openApp.\(UUID().uuidString)",
             content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.3, repeats: false)
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
     }
