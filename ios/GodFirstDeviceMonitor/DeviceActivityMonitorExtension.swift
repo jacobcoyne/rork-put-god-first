@@ -317,6 +317,45 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         timeLimitStore.shield.applications = nil
         timeLimitStore.shield.applicationCategories = nil
         timeLimitStore.clearAllSettings()
+        restartTimeLimitMonitoringForNewDay()
+    }
+
+    private func restartTimeLimitMonitoringForNewDay() {
+        sharedDefaults?.synchronize()
+        let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+        guard isEnabled else { return }
+
+        guard let data = sharedDefaults?.data(forKey: "timeLimitActivitySelection"),
+              let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else { return }
+        guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else { return }
+
+        let minutes = sharedDefaults?.integer(forKey: "screenTimeLimitMinutes") ?? 30
+        guard minutes > 0 else { return }
+
+        let center = DeviceActivityCenter()
+        let activityName = DeviceActivityName("godFirst.screenTimeLimit")
+        center.stopMonitoring([activityName])
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true,
+            warningTime: DateComponents(minute: 1)
+        )
+
+        let eventName = DeviceActivityEvent.Name("godFirst.timeLimitReached")
+        let event = DeviceActivityEvent(
+            applications: selection.applicationTokens,
+            categories: selection.categoryTokens,
+            webDomains: selection.webDomainTokens,
+            threshold: DateComponents(minute: minutes)
+        )
+
+        try? center.startMonitoring(
+            activityName,
+            during: schedule,
+            events: [eventName: event]
+        )
     }
 
     private func sendTimeLimitNotification() {

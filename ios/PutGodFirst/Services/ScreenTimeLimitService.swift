@@ -25,10 +25,7 @@ final class ScreenTimeLimitService {
             UserDefaults.standard.set(isEnabled, forKey: "screenTimeLimitEnabled")
             sharedDefaults?.set(isEnabled, forKey: "screenTimeLimitEnabled")
             sharedDefaults?.synchronize()
-            if isEnabled {
-                saveTimeLimitSelection()
-                startMonitoringFresh()
-            } else {
+            if !isEnabled {
                 stopMonitoring()
                 unlockTimeLimitedApps()
             }
@@ -118,14 +115,15 @@ final class ScreenTimeLimitService {
         isEnabled = enabled
 
         if !enabled {
-            stopMonitoring()
-            unlockTimeLimitedApps()
             return
         }
 
         guard hasTimeLimitAppsSelected else { return }
 
-        if selectionChanged || minutesChanged || enabledChanged || !isMonitoringActive {
+        let center = DeviceActivityCenter()
+        let isSystemMonitoring = center.activities.contains(.screenTimeLimit)
+
+        if selectionChanged || minutesChanged || enabledChanged || !isSystemMonitoring {
             startMonitoringFresh()
         }
     }
@@ -135,9 +133,13 @@ final class ScreenTimeLimitService {
         guard hasTimeLimitAppsSelected else { return }
         guard ScreenTimeService.shared.isAuthorized else { return }
 
-        if !isMonitoringActive {
-            startMonitoringFresh()
+        let center = DeviceActivityCenter()
+        if center.activities.contains(.screenTimeLimit) {
+            isMonitoringActive = true
+            return
         }
+
+        startMonitoringFresh()
     }
 
     private func startMonitoringFresh() {
