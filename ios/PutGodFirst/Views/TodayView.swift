@@ -173,22 +173,20 @@ struct TodayView: View {
             withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: false)) { shimmerPhase = 2.0 }
             withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) { shieldGlow = true }
             godFirstModeToggle = ScreenTimeService.shared.godFirstModeActive
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                checkPendingDeepLink()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                handlePendingActions()
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 godFirstModeToggle = ScreenTimeService.shared.godFirstModeActive
-                checkPendingDeepLink()
+                handlePendingActions()
             }
         }
         .onChange(of: viewModel.pendingScriptureUnlock) { _, newValue in
             if newValue {
                 viewModel.pendingScriptureUnlock = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    showScriptureUnlock = true
-                }
+                presentScriptureUnlock()
             }
         }
         .onChange(of: viewModel.pendingOpenSession) { _, newValue in
@@ -1624,18 +1622,37 @@ struct TodayView: View {
 
     // MARK: - Helpers
 
-    private func checkPendingDeepLink() {
+    private func handlePendingActions() {
+        if viewModel.pendingScriptureUnlock {
+            viewModel.pendingScriptureUnlock = false
+            presentScriptureUnlock()
+            return
+        }
+        if viewModel.pendingOpenSession {
+            viewModel.pendingOpenSession = false
+            if !viewModel.hasCompletedToday {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showDevotional = true
+                }
+            }
+            return
+        }
         if let action = DeepLinkManager.shared.consumeAction() {
             switch action {
             case .scriptureUnlock:
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    showScriptureUnlock = true
-                }
+                presentScriptureUnlock()
             case .openSession:
                 if !viewModel.hasCompletedToday {
                     showDevotional = true
                 }
             }
+        }
+    }
+
+    private func presentScriptureUnlock() {
+        let delay: TimeInterval = (showDevotional || showPrayerSetup || showChat || showVerseExpanded || showDevotionalExpanded || showDeclarationExpanded || showProgressDetail || showAppBlockingFromGodFirst) ? 0.6 : 0.3
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            showScriptureUnlock = true
         }
     }
 

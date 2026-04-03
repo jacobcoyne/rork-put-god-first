@@ -102,7 +102,13 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
 
         if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
             await MainActor.run {
-                UIApplication.shared.open(url)
+                if url.host == "scripture-unlock" {
+                    DeepLinkManager.shared.pendingAction = .scriptureUnlock
+                } else if url.host == "start-session" {
+                    DeepLinkManager.shared.pendingAction = .openSession
+                } else {
+                    UIApplication.shared.open(url)
+                }
             }
             return
         }
@@ -110,7 +116,7 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
         if categoryId == "SHIELD_TAP" || categoryId == "OPEN_APP" {
             let isPostSession = userInfo["isPostSession"] as? Bool ?? false
 
-            if isPostSession || actionId == "RECITE_SCRIPTURE" || (isDefaultTap && isPostSession) {
+            if isPostSession || actionId == "RECITE_SCRIPTURE" || (isDefaultTap && categoryId == "SHIELD_TAP") {
                 await MainActor.run {
                     DeepLinkManager.shared.pendingAction = .scriptureUnlock
                 }
@@ -123,15 +129,6 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        let userInfo = notification.request.content.userInfo
-
-        if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
-            await MainActor.run {
-                UIApplication.shared.open(url)
-            }
-            return []
-        }
-
         return [.banner, .sound]
     }
 }

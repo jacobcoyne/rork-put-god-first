@@ -138,6 +138,16 @@ struct MainTabView: View {
                 }
             }
             .tint(Theme.iceBlue)
+            .onChange(of: viewModel.pendingScriptureUnlock) { _, newValue in
+                if newValue {
+                    selectedTab = 0
+                }
+            }
+            .onChange(of: viewModel.pendingOpenSession) { _, newValue in
+                if newValue {
+                    selectedTab = 0
+                }
+            }
 
             if viewModel.showCompletionPopup {
                 CompletionPopup(viewModel: viewModel) {
