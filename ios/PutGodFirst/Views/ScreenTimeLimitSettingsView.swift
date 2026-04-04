@@ -64,6 +64,15 @@ struct ScreenTimeLimitSettingsView: View {
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isEnabled)
+            .onChange(of: isEnabled) { _, newValue in
+                applySettings()
+            }
+            .onChange(of: dailyMinutes) { _, _ in
+                applySettingsDebounced()
+            }
+            .onChange(of: activitySelection) { _, _ in
+                applySettings()
+            }
         }
     }
 
@@ -397,5 +406,11 @@ struct ScreenTimeLimitSettingsView: View {
             minutes: dailyMinutes,
             enabled: isEnabled
         )
+    }
+
+    private func applySettingsDebounced() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            applySettings()
+        }
     }
 }

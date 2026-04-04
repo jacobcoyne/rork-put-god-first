@@ -76,14 +76,14 @@ final class ScreenTimeLimitService {
         let shared = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
         shared?.synchronize()
 
-        self.isEnabled = UserDefaults.standard.bool(forKey: "screenTimeLimitEnabled")
-        let savedMinutes = max(UserDefaults.standard.integer(forKey: "screenTimeLimitMinutes"), 0)
-        self.dailyLimitMinutes = savedMinutes == 0 ? 30 : savedMinutes
+        self.isEnabled = shared?.bool(forKey: "screenTimeLimitEnabled") ?? UserDefaults.standard.bool(forKey: "screenTimeLimitEnabled")
+        let savedMinutes = shared?.integer(forKey: "screenTimeLimitMinutes") ?? UserDefaults.standard.integer(forKey: "screenTimeLimitMinutes")
+        self.dailyLimitMinutes = savedMinutes > 0 ? savedMinutes : 30
 
-        if let data = UserDefaults.standard.data(forKey: "timeLimitActivitySelection"),
+        if let data = shared?.data(forKey: "timeLimitActivitySelection"),
            let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             self.timeLimitSelection = selection
-        } else if let data = shared?.data(forKey: "timeLimitActivitySelection"),
+        } else if let data = UserDefaults.standard.data(forKey: "timeLimitActivitySelection"),
                   let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             self.timeLimitSelection = selection
         } else {
@@ -92,16 +92,14 @@ final class ScreenTimeLimitService {
 
         if isEnabled && hasTimeLimitAppsSelected {
             clearStaleLockData()
+            if isTimeLimitLocked && !wasTimeLimitUnlockedToday() {
+                reapplyShields()
+            }
             ensureMonitoringActive()
         }
     }
 
     func applySettingsAndStartMonitoring(selection: FamilyActivitySelection, minutes: Int, enabled: Bool) {
-        let selectionChanged = selection.applicationTokens != timeLimitSelection.applicationTokens ||
-            selection.categoryTokens != timeLimitSelection.categoryTokens
-        let minutesChanged = minutes != dailyLimitMinutes
-        let enabledChanged = enabled != isEnabled
-
         timeLimitSelection = selection
         dailyLimitMinutes = minutes
 
@@ -112,18 +110,18 @@ final class ScreenTimeLimitService {
         saveTimeLimitSelection()
         sharedDefaults?.synchronize()
 
-        isEnabled = enabled
-
         if !enabled {
+            isEnabled = enabled
             return
         }
 
+        isEnabled = enabled
+
         guard hasTimeLimitAppsSelected else { return }
 
-        let center = DeviceActivityCenter()
-        let isSystemMonitoring = center.activities.contains(.screenTimeLimit)
+        stopMonitoring()
 
-        if selectionChanged || minutesChanged || enabledChanged || !isSystemMonitoring {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
             startMonitoringFresh()
         }
     }
@@ -145,6 +143,7 @@ final class ScreenTimeLimitService {
     private func startMonitoringFresh() {
         guard ScreenTimeService.shared.isAuthorized else { return }
         guard hasTimeLimitAppsSelected else { return }
+        guard dailyLimitMinutes > 0 else { return }
 
         saveTimeLimitSelection()
         sharedDefaults?.synchronize()
@@ -153,10 +152,10 @@ final class ScreenTimeLimitService {
         center.stopMonitoring([.screenTimeLimit])
 
         let schedule = DeviceActivitySchedule(
-            intervalStart: DateComponents(hour: 0, minute: 0),
-            intervalEnd: DateComponents(hour: 23, minute: 59),
+            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: DateComponents(minute: 1)
+            warningTime: DateComponents(minute: max(1, dailyLimitMinutes - 1))
         )
 
         let event = DeviceActivityEvent(
@@ -195,12 +194,16 @@ final class ScreenTimeLimitService {
 
         let apps = timeLimitSelection.applicationTokens
         let categories = timeLimitSelection.categoryTokens
+        let webDomains = timeLimitSelection.webDomainTokens
 
         if !apps.isEmpty {
             store.shield.applications = apps
         }
         if !categories.isEmpty {
             store.shield.applicationCategories = .specific(categories)
+        }
+        if !webDomains.isEmpty {
+            store.shield.webDomains = webDomains
         }
 
         isTimeLimitLocked = true
@@ -213,6 +216,7 @@ final class ScreenTimeLimitService {
     func unlockTimeLimitedApps() {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
         store.clearAllSettings()
         isTimeLimitLocked = false
         sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
@@ -239,14 +243,25 @@ final class ScreenTimeLimitService {
         let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
         let isToday = isTimeLimitLockFromToday()
         if locked && isToday && !wasTimeLimitUnlockedToday() {
-            let apps = timeLimitSelection.applicationTokens
-            let categories = timeLimitSelection.categoryTokens
-            if !apps.isEmpty {
-                store.shield.applications = apps
-            }
-            if !categories.isEmpty {
-                store.shield.applicationCategories = .specific(categories)
-            }
+            reapplyShields()
+        }
+        if isEnabled && hasTimeLimitAppsSelected {
+            ensureMonitoringActive()
+        }
+    }
+
+    private func reapplyShields() {
+        let apps = timeLimitSelection.applicationTokens
+        let categories = timeLimitSelection.categoryTokens
+        let webDomains = timeLimitSelection.webDomainTokens
+        if !apps.isEmpty {
+            store.shield.applications = apps
+        }
+        if !categories.isEmpty {
+            store.shield.applicationCategories = .specific(categories)
+        }
+        if !webDomains.isEmpty {
+            store.shield.webDomains = webDomains
         }
     }
 
@@ -271,6 +286,7 @@ final class ScreenTimeLimitService {
                 sharedDefaults?.synchronize()
                 store.shield.applications = nil
                 store.shield.applicationCategories = nil
+                store.shield.webDomains = nil
                 store.clearAllSettings()
             }
         }
