@@ -62,9 +62,12 @@ struct ContentView: View {
                 st.refreshBlockingState()
                 viewModel.checkDailyReset()
 
-                if (st.godFirstModeActive || st.godFirstModeEnrolled) && st.isAuthorized {
+                if st.isAuthorized && (st.godFirstModeActive || st.godFirstModeEnrolled) {
+                    st.clearStaleData()
+                    if !viewModel.hasCompletedToday && !st.wasScriptureUnlockedToday() {
+                        st.blockApps()
+                    }
                     st.scheduleAllMonitoring()
-                    st.checkAndApplyBlocking(hasCompletedToday: viewModel.hasCompletedToday)
                 }
 
                 let stl = ScreenTimeLimitService.shared

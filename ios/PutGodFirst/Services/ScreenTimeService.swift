@@ -8,8 +8,17 @@ nonisolated extension DeviceActivityName {
     static let earlyMorningBackup = Self("godFirst.earlyMorningBackup")
     static let preDawnBackup = Self("godFirst.preDawnBackup")
     static let morningBackup = Self("godFirst.morningBackup")
+    static let lateMorningBackup = Self("godFirst.lateMorningBackup")
     static let lateNightPrep = Self("godFirst.lateNightPrep")
     static let preMidnightLock = Self("godFirst.preMidnightLock")
+    static let eveningEnforce = Self("godFirst.eveningEnforce")
+    static let nightEnforce = Self("godFirst.nightEnforce")
+
+    static let allGodFirstActivities: [DeviceActivityName] = [
+        .eveningEnforce, .nightEnforce, .lateNightPrep, .preMidnightLock,
+        .midnightReblock, .earlyMorningBackup, .preDawnBackup,
+        .morningBackup, .lateMorningBackup
+    ]
 }
 
 nonisolated extension ManagedSettingsStore.Name {
@@ -180,7 +189,6 @@ final class ScreenTimeService {
         UserDefaults.standard.set(false, forKey: "isCurrentlyBlocking")
         sharedDefaults?.set(false, forKey: "isCurrentlyBlocking")
         sharedDefaults?.synchronize()
-        scheduleAllMonitoring()
     }
 
     func checkAndApplyBlocking(hasCompletedToday: Bool) {
@@ -282,19 +290,16 @@ final class ScreenTimeService {
         guard godFirstModeActive || godFirstModeEnrolled || hasAppsSelected else { return }
         let center = DeviceActivityCenter()
 
-        let allActivities: [DeviceActivityName] = [
-            .midnightReblock, .earlyMorningBackup, .preDawnBackup,
-            .morningBackup, .lateNightPrep, .preMidnightLock
-        ]
-        center.stopMonitoring(allActivities)
-
         let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
-            (.preMidnightLock,     23, 50, 23, 58),
+            (.eveningEnforce,      21,  0, 21, 30),
+            (.nightEnforce,        22,  0, 22, 30),
+            (.lateNightPrep,       23,  0, 23, 25),
+            (.preMidnightLock,     23, 26, 23, 58),
             (.midnightReblock,      0,  0,  0, 30),
-            (.earlyMorningBackup,   3,  0,  3, 30),
-            (.preDawnBackup,        5,  0,  5, 30),
-            (.morningBackup,        7,  0,  7, 30),
-            (.lateNightPrep,       23, 30, 23, 49),
+            (.earlyMorningBackup,   2,  0,  2, 30),
+            (.preDawnBackup,        4,  0,  4, 30),
+            (.morningBackup,        6,  0,  6, 30),
+            (.lateMorningBackup,    8,  0,  8, 30),
         ]
 
         for (name, startH, startM, endH, endM) in schedules {
@@ -312,10 +317,11 @@ final class ScreenTimeService {
 
     func stopAllMonitoring() {
         let center = DeviceActivityCenter()
-        center.stopMonitoring([
-            .midnightReblock, .earlyMorningBackup, .preDawnBackup,
-            .morningBackup, .lateNightPrep, .preMidnightLock
-        ])
+        center.stopMonitoring(DeviceActivityName.allGodFirstActivities)
+    }
+
+    func clearStaleData() {
+        clearStaleUnlockData()
     }
 
     private func clearStaleUnlockData() {

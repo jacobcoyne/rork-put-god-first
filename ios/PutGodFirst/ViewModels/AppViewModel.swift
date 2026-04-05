@@ -218,6 +218,7 @@ final class AppViewModel {
         checkBadgeEarnings()
         ScreenTimeService.shared.clearManualFocusLock()
         ScreenTimeService.shared.unblockApps()
+        ScreenTimeService.shared.scheduleAllMonitoring()
         NotificationService.rescheduleAfterCompletion()
     }
 

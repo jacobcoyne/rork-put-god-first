@@ -34,5 +34,6 @@ final class ScriptureUnlockService {
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "lastScriptureUnlockTimestamp")
         sharedDefaults?.synchronize()
         ScreenTimeService.shared.unblockApps()
+        ScreenTimeService.shared.scheduleAllMonitoring()
     }
 }
