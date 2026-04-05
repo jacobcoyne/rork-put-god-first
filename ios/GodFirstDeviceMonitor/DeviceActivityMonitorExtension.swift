@@ -55,16 +55,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         guard !apps.isEmpty || !categories.isEmpty else { return }
 
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.clearAllSettings()
+        store.shield.applications = apps.isEmpty ? nil : apps
+        store.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
 
-        if !apps.isEmpty {
-            store.shield.applications = apps
-        }
-        if !categories.isEmpty {
-            store.shield.applicationCategories = .specific(categories)
-        }
         sharedDefaults?.set(true, forKey: "isCurrentlyBlocking")
         sharedDefaults?.synchronize()
     }
@@ -94,10 +87,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         sharedDefaults?.set(false, forKey: "manualFocusLockActive")
         sharedDefaults?.synchronize()
 
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.clearAllSettings()
-
         applyShields()
     }
 
@@ -106,9 +95,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         clearStaleUnlockData()
         syncDefaults()
         if !hasCompletedToday && !wasScriptureUnlockedToday {
-            store.shield.applications = nil
-            store.shield.applicationCategories = nil
-            store.clearAllSettings()
             applyShields()
         }
     }
@@ -135,9 +121,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
         sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
         sharedDefaults?.synchronize()
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.clearAllSettings()
         applyShields()
     }
 
@@ -183,9 +166,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             guard shouldForceOn else { return }
             forceGodFirstModeOn()
             if !hasCompletedToday && !wasScriptureUnlockedToday {
-                store.shield.applications = nil
-                store.shield.applicationCategories = nil
-                store.clearAllSettings()
                 applyShields()
             }
             return
@@ -212,9 +192,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 let d = Date(timeIntervalSince1970: ts)
                 if Calendar.current.isDateInToday(d) {
                     applyTimeLimitShields()
+                    return
                 }
             }
         }
+
+        restartTimeLimitMonitoringForNewDay()
     }
 
     override func intervalDidStart(for activity: DeviceActivityName) {
@@ -324,20 +307,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         guard !apps.isEmpty || !categories.isEmpty else { return }
 
-        timeLimitStore.shield.applications = nil
-        timeLimitStore.shield.applicationCategories = nil
-        timeLimitStore.shield.webDomains = nil
-        timeLimitStore.clearAllSettings()
-
-        if !apps.isEmpty {
-            timeLimitStore.shield.applications = apps
-        }
-        if !categories.isEmpty {
-            timeLimitStore.shield.applicationCategories = .specific(categories)
-        }
-        if !webDomains.isEmpty {
-            timeLimitStore.shield.webDomains = webDomains
-        }
+        timeLimitStore.shield.applications = apps.isEmpty ? nil : apps
+        timeLimitStore.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
+        timeLimitStore.shield.webDomains = webDomains.isEmpty ? nil : webDomains
 
         sharedDefaults?.set(true, forKey: "isTimeLimitLocked")
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "timeLimitLockTimestamp")
@@ -356,7 +328,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         timeLimitStore.shield.applications = nil
         timeLimitStore.shield.applicationCategories = nil
         timeLimitStore.shield.webDomains = nil
-        timeLimitStore.clearAllSettings()
         restartTimeLimitMonitoringForNewDay()
     }
 

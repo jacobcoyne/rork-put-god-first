@@ -117,16 +117,8 @@ final class ScreenTimeService {
 
         guard !apps.isEmpty || !categories.isEmpty else { return }
 
-        store.shield.applications = nil
-        store.shield.applicationCategories = nil
-        store.clearAllSettings()
-
-        if !apps.isEmpty {
-            store.shield.applications = apps
-        }
-        if !categories.isEmpty {
-            store.shield.applicationCategories = .specific(categories)
-        }
+        store.shield.applications = apps.isEmpty ? nil : apps
+        store.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
 
         isBlocking = true
         UserDefaults.standard.set(true, forKey: "isCurrentlyBlocking")
@@ -184,7 +176,6 @@ final class ScreenTimeService {
     func unblockApps() {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
-        store.clearAllSettings()
         isBlocking = false
         UserDefaults.standard.set(false, forKey: "isCurrentlyBlocking")
         sharedDefaults?.set(false, forKey: "isCurrentlyBlocking")
@@ -200,9 +191,7 @@ final class ScreenTimeService {
         clearStaleUnlockData()
 
         if isManualFocusLockActive() {
-            if !isBlocking {
-                blockApps()
-            }
+            blockApps()
             return
         }
 
