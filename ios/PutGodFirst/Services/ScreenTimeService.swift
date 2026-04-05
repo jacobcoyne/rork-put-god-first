@@ -117,6 +117,10 @@ final class ScreenTimeService {
 
         guard !apps.isEmpty || !categories.isEmpty else { return }
 
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.clearAllSettings()
+
         if !apps.isEmpty {
             store.shield.applications = apps
         }

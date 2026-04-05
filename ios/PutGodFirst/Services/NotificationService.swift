@@ -82,34 +82,9 @@ enum NotificationService {
 
     static func scheduleMidnightRelockNotifications() {
         let center = UNUserNotificationCenter.current()
-
         center.removePendingNotificationRequests(withIdentifiers: [
             "relock-midnight", "relock-3am", "relock-5am"
         ])
-
-        guard ScreenTimeService.shared.godFirstModeEnrolled || ScreenTimeService.shared.godFirstModeActive else { return }
-
-        let times: [(String, Int, Int)] = [
-            ("relock-midnight", 0, 1),
-            ("relock-3am", 3, 0),
-            ("relock-5am", 5, 0),
-        ]
-
-        for (id, hour, minute) in times {
-            let content = UNMutableNotificationContent()
-            content.title = "God First Mode Active"
-            content.body = "Your apps are locked. Complete your session to unlock."
-            content.sound = nil
-            content.categoryIdentifier = "OPEN_APP"
-            content.interruptionLevel = .passive
-            content.userInfo = ["relockTrigger": true]
-
-            var comps = DateComponents()
-            comps.hour = hour
-            comps.minute = minute
-            let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
-            center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
-        }
     }
 
     static func cancelRelockNotifications() {

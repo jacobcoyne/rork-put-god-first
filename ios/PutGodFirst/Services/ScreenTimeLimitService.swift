@@ -155,7 +155,7 @@ final class ScreenTimeLimitService {
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: DateComponents(minute: max(1, dailyLimitMinutes - 1))
+            warningTime: nil
         )
 
         let event = DeviceActivityEvent(
@@ -196,6 +196,11 @@ final class ScreenTimeLimitService {
         let categories = timeLimitSelection.categoryTokens
         let webDomains = timeLimitSelection.webDomainTokens
 
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        store.shield.webDomains = nil
+        store.clearAllSettings()
+
         if !apps.isEmpty {
             store.shield.applications = apps
         }
@@ -209,8 +214,6 @@ final class ScreenTimeLimitService {
         isTimeLimitLocked = true
         sharedDefaults?.set(true, forKey: "isTimeLimitBlocking")
         sharedDefaults?.synchronize()
-
-        sendTimeLimitNotification()
     }
 
     func unlockTimeLimitedApps() {
@@ -290,27 +293,6 @@ final class ScreenTimeLimitService {
                 store.clearAllSettings()
             }
         }
-    }
-
-    private func sendTimeLimitNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Screen Time Limit Reached \u{23F0}"
-        content.body = "You've used your daily screen time. Complete a challenge to unlock!"
-        content.sound = .default
-        content.categoryIdentifier = "SCREEN_TIME_LIMIT"
-        content.interruptionLevel = .timeSensitive
-        content.relevanceScore = 1.0
-        content.userInfo = [
-            "deepLink": "putgodfirst://time-limit-unlock",
-            "isTimeLimitChallenge": true
-        ]
-
-        let request = UNNotificationRequest(
-            identifier: "godFirst.timeLimit.\(UUID().uuidString)",
-            content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
-        )
-        UNUserNotificationCenter.current().add(request)
     }
 
     private func saveTimeLimitSelection() {

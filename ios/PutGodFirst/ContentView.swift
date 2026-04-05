@@ -3,7 +3,10 @@ import SwiftUI
 struct ContentView: View {
     @State private var viewModel = AppViewModel()
     @State private var showLaunchAnimation: Bool = true
+    @State private var showScreenTimeLimitOnboarding: Bool = false
     @Environment(\.scenePhase) private var scenePhase
+
+    private let screenTimeLimitOnboardingKey = "hasSeenScreenTimeLimitOnboarding"
 
     var body: some View {
         ZStack {
@@ -24,10 +27,29 @@ struct ContentView: View {
             if showLaunchAnimation && viewModel.hasCompletedOnboarding && !viewModel.showAppBlockingSetup {
                 LaunchAnimationView {
                     showLaunchAnimation = false
+                    checkScreenTimeLimitOnboarding()
                 }
                 .ignoresSafeArea()
                 .zIndex(200)
             }
+        }
+        .fullScreenCover(isPresented: $showScreenTimeLimitOnboarding) {
+            ScreenTimeLimitOnboardingView(
+                onEnable: {
+                    UserDefaults.standard.set(true, forKey: screenTimeLimitOnboardingKey)
+                    showScreenTimeLimitOnboarding = false
+                    viewModel.showScreenTimeLimitOnboarding = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        viewModel.pendingTimeLimitUnlock = false
+                        navigateToScreenTimeLimitSettings()
+                    }
+                },
+                onSkip: {
+                    UserDefaults.standard.set(true, forKey: screenTimeLimitOnboardingKey)
+                    showScreenTimeLimitOnboarding = false
+                    viewModel.showScreenTimeLimitOnboarding = false
+                }
+            )
         }
         .onAppear {
             handlePendingDeepLink()
@@ -100,6 +122,19 @@ struct ContentView: View {
             viewModel.pendingTimeLimitUnlock = true
         }
     }
+
+    private func checkScreenTimeLimitOnboarding() {
+        let hasSeen = UserDefaults.standard.bool(forKey: screenTimeLimitOnboardingKey)
+        if !hasSeen && viewModel.hasCompletedOnboarding && !ScreenTimeLimitService.shared.isEnabled {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                showScreenTimeLimitOnboarding = true
+            }
+        }
+    }
+
+    private func navigateToScreenTimeLimitSettings() {
+        viewModel.showScreenTimeLimitOnboarding = true
+    }
 }
 
 struct LatinCrossShape: Shape {
@@ -121,6 +156,7 @@ struct MainTabView: View {
     @Bindable var viewModel: AppViewModel
     @State private var selectedTab: Int = 0
     @State private var showTimeLimitChallenge: Bool = false
+    @State private var showScreenTimeLimitSettings: Bool = false
 
     var body: some View {
         ZStack {
@@ -182,6 +218,18 @@ struct MainTabView: View {
             TimeLimitChallengeView {
                 ScreenTimeLimitService.shared.unlockWithChallenge()
                 ScreenTimeService.shared.refreshBlockingState()
+            }
+        }
+        .sheet(isPresented: $showScreenTimeLimitSettings) {
+            ScreenTimeLimitSettingsView()
+        }
+        .onChange(of: viewModel.showScreenTimeLimitOnboarding) { _, newValue in
+            if newValue {
+                viewModel.showScreenTimeLimitOnboarding = false
+                selectedTab = 4
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showScreenTimeLimitSettings = true
+                }
             }
         }
         .onAppear {
