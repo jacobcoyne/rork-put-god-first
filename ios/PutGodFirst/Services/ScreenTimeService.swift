@@ -98,8 +98,6 @@ final class ScreenTimeService {
             clearStaleUnlockData()
             if !checkHasCompletedToday() && !wasScriptureUnlockedToday() {
                 blockApps()
-            } else if isBlocking {
-                blockApps()
             }
             scheduleAllMonitoring()
         }
@@ -225,6 +223,34 @@ final class ScreenTimeService {
             }
         }
 
+        scheduleAllMonitoring()
+    }
+
+    func enforceFromBackground() {
+        guard isAuthorized else { return }
+        guard godFirstModeActive || godFirstModeEnrolled else { return }
+
+        forceReloadSelection()
+        clearStaleUnlockData()
+
+        if !checkHasCompletedToday() && !wasScriptureUnlockedToday() {
+            blockApps()
+        }
+
+        scheduleAllMonitoring()
+    }
+
+    func performMidnightReset() {
+        guard isAuthorized else { return }
+        guard godFirstModeActive || godFirstModeEnrolled else { return }
+
+        sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
+        sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
+        sharedDefaults?.set(false, forKey: "manualFocusLockActive")
+        sharedDefaults?.synchronize()
+
+        forceReloadSelection()
+        blockApps()
         scheduleAllMonitoring()
     }
 

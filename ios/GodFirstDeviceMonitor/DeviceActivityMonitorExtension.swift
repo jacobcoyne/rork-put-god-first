@@ -112,20 +112,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         applyShields()
     }
 
-    private func forcePreMidnightLock() {
-        forceGodFirstModeOn()
-        sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
-        sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
-        sharedDefaults?.synchronize()
-        applyShields()
-    }
-
     private func enforceBlockingIfNeeded() {
-        forceGodFirstModeOn()
         clearStaleUnlockData()
         syncDefaults()
+
+        let modeActive = isGodFirstModeActive || isGodFirstModeEnrolled
+        if modeActive {
+            forceGodFirstModeOn()
+        }
+
         if !hasCompletedToday && !wasScriptureUnlockedToday {
-            applyShields()
+            if modeActive || hasAppsSelected {
+                applyShields()
+            }
         }
     }
 
@@ -158,8 +157,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        guard shouldEnforce else { return }
-
         if isMidnightActivity(activity) {
             forceNewDayReset()
             clearTimeLimitDataForNewDay()
@@ -167,12 +164,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         if isPreMidnightActivity(activity) {
-            forcePreMidnightLock()
-            return
-        }
-
-        if isEveningActivity(activity) {
-            enforceBlockingIfNeeded()
+            forceNewDayReset()
             return
         }
 
@@ -185,18 +177,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         if isScreenTimeLimitActivity(activity) { return }
 
-        guard shouldEnforce else { return }
-
-        if isPreMidnightActivity(activity) {
-            forcePreMidnightLock()
-            return
-        }
-
-        if isEveningActivity(activity) {
-            enforceBlockingIfNeeded()
-            return
-        }
-
         enforceBlockingIfNeeded()
     }
 
@@ -204,7 +184,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalWillStartWarning(for: activity)
         syncDefaults()
         if isScreenTimeLimitActivity(activity) { return }
-        guard shouldEnforce else { return }
         enforceBlockingIfNeeded()
     }
 
@@ -212,10 +191,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalWillEndWarning(for: activity)
         syncDefaults()
         if isScreenTimeLimitActivity(activity) { return }
-        guard shouldEnforce else { return }
 
         if isPreMidnightActivity(activity) {
-            forcePreMidnightLock()
+            forceNewDayReset()
             return
         }
 
@@ -244,19 +222,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         syncDefaults()
         let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
         guard isEnabled else { return }
-        guard !wasTimeLimitUnlockedToday else { return }
 
         let alreadyLocked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
         if alreadyLocked {
             if let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 {
                 let d = Date(timeIntervalSince1970: ts)
-                if Calendar.current.isDateInToday(d) {
+                if Calendar.current.isDateInToday(d) && !wasTimeLimitUnlockedToday {
                     applyTimeLimitShields()
                     return
                 }
             }
         }
 
+        clearTimeLimitDataForNewDay()
         restartTimeLimitMonitoringForNewDay()
     }
 
@@ -299,15 +277,20 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     private func clearTimeLimitDataForNewDay() {
-        sharedDefaults?.set(false, forKey: "isTimeLimitLocked")
-        sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
-        sharedDefaults?.removeObject(forKey: "lastTimeLimitUnlockTimestamp")
-        sharedDefaults?.removeObject(forKey: "timeLimitLockTimestamp")
-        sharedDefaults?.synchronize()
-        timeLimitStore.shield.applications = nil
-        timeLimitStore.shield.applicationCategories = nil
-        timeLimitStore.shield.webDomains = nil
-        restartTimeLimitMonitoringForNewDay()
+        syncDefaults()
+        if let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if !Calendar.current.isDateInToday(d) {
+                sharedDefaults?.set(false, forKey: "isTimeLimitLocked")
+                sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
+                sharedDefaults?.removeObject(forKey: "lastTimeLimitUnlockTimestamp")
+                sharedDefaults?.removeObject(forKey: "timeLimitLockTimestamp")
+                sharedDefaults?.synchronize()
+                timeLimitStore.shield.applications = nil
+                timeLimitStore.shield.applicationCategories = nil
+                timeLimitStore.shield.webDomains = nil
+            }
+        }
     }
 
     private func restartTimeLimitMonitoringForNewDay() {

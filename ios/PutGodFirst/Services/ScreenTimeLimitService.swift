@@ -243,6 +243,28 @@ final class ScreenTimeLimitService {
         }
     }
 
+    func checkAndEnforceFromForeground() {
+        guard isEnabled else { return }
+        guard hasTimeLimitAppsSelected else { return }
+        guard ScreenTimeService.shared.isAuthorized else { return }
+
+        clearStaleLockData()
+        reloadTimeLimitSelection()
+
+        if isTimeLimitLocked && !wasTimeLimitUnlockedToday() {
+            reapplyShields()
+            return
+        }
+
+        let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
+        if locked && isTimeLimitLockFromToday() && !wasTimeLimitUnlockedToday() {
+            reapplyShields()
+            return
+        }
+
+        ensureMonitoringActive()
+    }
+
     private func reloadTimeLimitSelection() {
         sharedDefaults?.synchronize()
         if let data = sharedDefaults?.data(forKey: "timeLimitActivitySelection"),

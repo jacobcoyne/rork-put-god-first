@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import BackgroundTasks
 
 @main
 struct GodFirstAppApp: App {
@@ -8,6 +9,8 @@ struct GodFirstAppApp: App {
     init() {
         SubscriptionService.shared.configure()
         registerNotificationCategories()
+        BackgroundEnforcementService.registerTasks()
+        BackgroundEnforcementService.scheduleAll()
     }
 
     var body: some Scene {
@@ -86,7 +89,49 @@ struct GodFirstAppApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        scheduleMidnightLocalNotifications()
         return true
+    }
+
+    private func scheduleMidnightLocalNotifications() {
+        let st = ScreenTimeService.shared
+        guard st.godFirstModeActive || st.godFirstModeEnrolled else { return }
+
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [
+            "midnight-relock-0", "midnight-relock-1", "midnight-relock-2",
+            "midnight-relock-3", "midnight-relock-4", "midnight-relock-5",
+            "midnight-relock-6"
+        ])
+
+        for dayOffset in 0..<7 {
+            let content = UNMutableNotificationContent()
+            content.title = "Put God First 🙏"
+            content.body = "Your apps are locked. Start your morning with God."
+            content.sound = nil
+            content.interruptionLevel = .passive
+            content.userInfo = ["relockTrigger": true, "silent": true]
+
+            var comps = DateComponents()
+            comps.hour = 0
+            comps.minute = 1
+            if dayOffset > 0 {
+                if let future = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) {
+                    let futureComps = Calendar.current.dateComponents([.year, .month, .day], from: future)
+                    comps.year = futureComps.year
+                    comps.month = futureComps.month
+                    comps.day = futureComps.day
+                }
+            }
+
+            let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: dayOffset == 0)
+            let request = UNNotificationRequest(
+                identifier: "midnight-relock-\(dayOffset)",
+                content: content,
+                trigger: trigger
+            )
+            center.add(request)
+        }
     }
 }
 

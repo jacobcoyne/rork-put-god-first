@@ -57,31 +57,12 @@ struct ContentView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                let st = ScreenTimeService.shared
-                st.refreshAuthStatus()
-                st.refreshBlockingState()
-                viewModel.checkDailyReset()
-
-                if st.isAuthorized && (st.godFirstModeActive || st.godFirstModeEnrolled) {
-                    st.clearStaleData()
-                    if !viewModel.hasCompletedToday && !st.wasScriptureUnlockedToday() {
-                        st.blockApps()
-                    }
-                    st.scheduleAllMonitoring()
-                }
-
-                let stl = ScreenTimeLimitService.shared
-                stl.refreshLockState()
-                stl.ensureMonitoringActive()
-                if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
-                    stl.lockTimeLimitedApps()
-                    if DeepLinkManager.shared.pendingAction == nil {
-                        DeepLinkManager.shared.pendingAction = .timeLimitUnlock
-                    }
-                }
-
+                performForegroundEnforcement()
                 NotificationService.cancelTodayNotifications()
                 handlePendingDeepLink()
+                BackgroundEnforcementService.scheduleAll()
+            } else if newPhase == .background {
+                BackgroundEnforcementService.scheduleAll()
             }
         }
         .onChange(of: DeepLinkManager.shared.pendingAction) { _, newAction in
@@ -94,6 +75,30 @@ struct ContentView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     ensureInitialLocking()
                 }
+            }
+        }
+    }
+
+    private func performForegroundEnforcement() {
+        let st = ScreenTimeService.shared
+        st.refreshAuthStatus()
+        st.refreshBlockingState()
+        viewModel.checkDailyReset()
+
+        if st.isAuthorized && (st.godFirstModeActive || st.godFirstModeEnrolled) {
+            st.clearStaleData()
+            if !viewModel.hasCompletedToday && !st.wasScriptureUnlockedToday() {
+                st.blockApps()
+            }
+            st.scheduleAllMonitoring()
+        }
+
+        let stl = ScreenTimeLimitService.shared
+        stl.checkAndEnforceFromForeground()
+        if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
+            stl.lockTimeLimitedApps()
+            if DeepLinkManager.shared.pendingAction == nil {
+                DeepLinkManager.shared.pendingAction = .timeLimitUnlock
             }
         }
     }
