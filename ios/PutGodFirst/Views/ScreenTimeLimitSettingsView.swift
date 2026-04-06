@@ -47,7 +47,7 @@ struct ScreenTimeLimitSettingsView: View {
             }
             .background(Theme.bg)
             .navigationTitle("Screen Time Limits")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {

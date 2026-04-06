@@ -511,13 +511,23 @@ struct TodayView: View {
                             .foregroundStyle(Theme.textPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    HStack(spacing: 6) {
-                        Image(systemName: "sunrise.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color(red: 0.85, green: 0.25, blue: 0.30).opacity(0.8))
-                        Text("Complete today\u{2019}s session to unlock your apps")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
+                    VStack(spacing: 4) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "sunrise.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Color(red: 0.85, green: 0.25, blue: 0.30).opacity(0.8))
+                            Text("Complete today\u{2019}s session to unlock your apps")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        HStack(spacing: 6) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Theme.icePurple.opacity(0.8))
+                            Text("Or tap the \(Image(systemName: "lock.fill")) icon to recite scripture")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
                     }
                 }
                 .padding(.horizontal, 14)
@@ -586,12 +596,22 @@ struct TodayView: View {
                     removal: .move(edge: .top).combined(with: .opacity)
                 ))
             } else if isAppsLocked {
-                HStack(spacing: 8) {
-                    Circle().fill(Color(red: 0.85, green: 0.25, blue: 0.30)).frame(width: 6, height: 6)
-                    Text("Apps locked \u{2014} tap \(Image(systemName: "lock.fill")) to unlock")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
+                VStack(spacing: 6) {
+                    HStack(spacing: 8) {
+                        Circle().fill(Color(red: 0.85, green: 0.25, blue: 0.30)).frame(width: 6, height: 6)
+                        Text("Apps locked \u{2014} tap \(Image(systemName: "lock.fill")) to unlock")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Theme.icePurple.opacity(0.8))
+                        Text("Recite a scripture verse to unlock your apps")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)

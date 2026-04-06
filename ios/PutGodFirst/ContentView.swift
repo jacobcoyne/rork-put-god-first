@@ -4,9 +4,11 @@ struct ContentView: View {
     @State private var viewModel = AppViewModel()
     @State private var showLaunchAnimation: Bool = true
     @State private var showScreenTimeLimitOnboarding: Bool = false
+    @State private var showAppLockingReminder: Bool = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let screenTimeLimitOnboardingKey = "hasSeenScreenTimeLimitOnboarding"
+    private let lastLaunchedVersionKey = "lastLaunchedAppVersion"
 
     var body: some View {
         ZStack {
@@ -28,10 +30,19 @@ struct ContentView: View {
                 LaunchAnimationView {
                     showLaunchAnimation = false
                     checkScreenTimeLimitOnboarding()
+                    checkAppUpdateLockingReminder()
                 }
                 .ignoresSafeArea()
                 .zIndex(200)
             }
+        }
+        .alert("Enable App Locking?", isPresented: $showAppLockingReminder) {
+            Button("Enable") {
+                viewModel.showAppBlockingSetup = true
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Lock your apps every morning until you spend time with God. This is the best way to build a daily habit of putting God first.")
         }
         .fullScreenCover(isPresented: $showScreenTimeLimitOnboarding) {
             ScreenTimeLimitOnboardingView(
@@ -140,6 +151,24 @@ struct ContentView: View {
 
     private func navigateToScreenTimeLimitSettings() {
         viewModel.showScreenTimeLimitOnboarding = true
+    }
+
+    private func checkAppUpdateLockingReminder() {
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let lastVersion = UserDefaults.standard.string(forKey: lastLaunchedVersionKey)
+
+        UserDefaults.standard.set(currentVersion, forKey: lastLaunchedVersionKey)
+
+        guard let lastVersion, lastVersion != currentVersion else { return }
+        guard viewModel.hasCompletedOnboarding else { return }
+
+        let st = ScreenTimeService.shared
+        let isLockingEnabled = st.godFirstModeActive || st.godFirstModeEnrolled
+        if !isLockingEnabled {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                showAppLockingReminder = true
+            }
+        }
     }
 }
 

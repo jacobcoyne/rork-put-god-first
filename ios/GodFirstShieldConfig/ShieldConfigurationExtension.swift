@@ -121,7 +121,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
                 backgroundColor: bgColor,
                 icon: icon,
                 title: ShieldConfiguration.Label(text: "\u{23F0} Screen Time Limit Reached", color: titleColor),
-                subtitle: ShieldConfiguration.Label(text: "You\u{2019}ve used your \(timeLimitMinutes)-minute daily limit! \u{1F4AA} Tap below to complete a faith challenge and unlock your apps. You got this! \u{1F525}", color: subtitleColor),
+                subtitle: ShieldConfiguration.Label(text: "You\u{2019}ve used your \(timeLimitMinutes)-minute daily limit! \u{1F4AA} Tap the button below \u{2014} then tap the notification that appears to open Put God First and complete your challenge. \u{1F525}", color: subtitleColor),
                 primaryButtonLabel: ShieldConfiguration.Label(text: "Take the Challenge \u{2728}", color: buttonTextColor),
                 primaryButtonBackgroundColor: buttonBgColor,
                 secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
@@ -138,7 +138,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
                 backgroundColor: bgColor,
                 icon: icon,
                 title: ShieldConfiguration.Label(text: "\u{1F4D6} Recite Scripture to Unlock", color: titleColor),
-                subtitle: ShieldConfiguration.Label(text: "You already put God first today! \u{1F64F} Tap below to recite a verse and unlock your apps. You got this! \u{1F4AA}", color: subtitleColor),
+                subtitle: ShieldConfiguration.Label(text: "You already put God first today! \u{1F64F} Tap the button below \u{2014} then tap the notification that appears to open Put God First and recite a verse. \u{1F4AA}", color: subtitleColor),
                 primaryButtonLabel: ShieldConfiguration.Label(text: "Recite Scripture \u{1F399}\u{FE0F}", color: buttonTextColor),
                 primaryButtonBackgroundColor: buttonBgColor,
                 secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
@@ -155,7 +155,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             backgroundColor: bgColor,
             icon: icon,
             title: ShieldConfiguration.Label(text: message.title, color: titleColor),
-            subtitle: ShieldConfiguration.Label(text: message.subtitle, color: subtitleColor),
+            subtitle: ShieldConfiguration.Label(text: "\(message.subtitle)\n\nTap the button below, then tap the notification to open Put God First.", color: subtitleColor),
             primaryButtonLabel: ShieldConfiguration.Label(text: "Open God First \u{1F64F}", color: buttonTextColor),
             primaryButtonBackgroundColor: buttonBgColor,
             secondaryButtonLabel: ShieldConfiguration.Label(text: "Close", color: secondaryTextColor)
