@@ -23,7 +23,22 @@ class ShieldActionExtension: ShieldActionDelegate {
         return Calendar.current.isDateInToday(d)
     }
 
+    private func shouldThrottleNotification(key: String) -> Bool {
+        sharedDefaults?.synchronize()
+        let lastSentKey = "lastNotifTime_\(key)"
+        let lastSent = sharedDefaults?.double(forKey: lastSentKey) ?? 0
+        let now = Date().timeIntervalSince1970
+        if now - lastSent < 3600 {
+            return true
+        }
+        sharedDefaults?.set(now, forKey: lastSentKey)
+        sharedDefaults?.synchronize()
+        return false
+    }
+
     private func sendTimeLimitChallengeNotification() {
+        guard !shouldThrottleNotification(key: "timeLimitShield") else { return }
+
         let content = UNMutableNotificationContent()
         content.title = "Screen Time Limit Reached \u{23F0}"
         content.body = "Tap here to complete a challenge and unlock your apps."
@@ -37,7 +52,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.relevanceScore = 1.0
 
         let request = UNNotificationRequest(
-            identifier: "godFirst.timeLimitShield.\(UUID().uuidString)",
+            identifier: "godFirst.timeLimitShield",
             content: content,
             trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
         )
@@ -73,8 +88,11 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
 
+        let notifKey = isTimeLimitBlocking ? "timeLimitShield" : (hasCompletedToday ? "scriptureUnlock" : "morningSession")
+        guard !shouldThrottleNotification(key: notifKey) else { return }
+
         let request = UNNotificationRequest(
-            identifier: "godFirst.openApp.\(UUID().uuidString)",
+            identifier: "godFirst.openApp",
             content: content,
             trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
         )

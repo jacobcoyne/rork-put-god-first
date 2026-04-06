@@ -347,7 +347,22 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         )
     }
 
+    private func shouldThrottleNotification(key: String) -> Bool {
+        syncDefaults()
+        let lastSentKey = "lastNotifTime_\(key)"
+        let lastSent = sharedDefaults?.double(forKey: lastSentKey) ?? 0
+        let now = Date().timeIntervalSince1970
+        if now - lastSent < 3600 {
+            return true
+        }
+        sharedDefaults?.set(now, forKey: lastSentKey)
+        sharedDefaults?.synchronize()
+        return false
+    }
+
     private func sendTimeLimitNotification() {
+        guard !shouldThrottleNotification(key: "timeLimitMonitor") else { return }
+
         let content = UNMutableNotificationContent()
         content.title = "Screen Time Limit Reached"
         content.body = "Your apps are now locked. Complete a challenge to unlock."
