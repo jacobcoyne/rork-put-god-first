@@ -1,10 +1,12 @@
 import SwiftUI
+import UserNotifications
 
 struct ContentView: View {
     @State private var viewModel = AppViewModel()
     @State private var showLaunchAnimation: Bool = true
     @State private var showScreenTimeLimitOnboarding: Bool = false
     @State private var showAppLockingReminder: Bool = false
+    @State private var showNotificationReminder: Bool = false
     @Environment(\.scenePhase) private var scenePhase
 
     private let screenTimeLimitOnboardingKey = "hasSeenScreenTimeLimitOnboarding"
@@ -31,10 +33,19 @@ struct ContentView: View {
                     showLaunchAnimation = false
                     checkScreenTimeLimitOnboarding()
                     checkAppUpdateLockingReminder()
+                    checkNotificationPermissionReminder()
                 }
                 .ignoresSafeArea()
                 .zIndex(200)
             }
+        }
+        .alert("Enable Notifications?", isPresented: $showNotificationReminder) {
+            Button("Enable") {
+                NotificationService.requestPermission()
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Turn on notifications so you never miss your morning reminder to put God first.")
         }
         .alert("Enable App Locking?", isPresented: $showAppLockingReminder) {
             Button("Enable") {
@@ -167,6 +178,22 @@ struct ContentView: View {
         if !isLockingEnabled {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 showAppLockingReminder = true
+            }
+        }
+    }
+
+    private func checkNotificationPermissionReminder() {
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let lastVersion = UserDefaults.standard.string(forKey: lastLaunchedVersionKey)
+
+        guard let lastVersion, lastVersion != currentVersion else { return }
+        guard viewModel.hasCompletedOnboarding else { return }
+
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            if settings.authorizationStatus != .authorized {
+                try? await Task.sleep(for: .seconds(showAppLockingReminder ? 2.5 : 1.5))
+                showNotificationReminder = true
             }
         }
     }
