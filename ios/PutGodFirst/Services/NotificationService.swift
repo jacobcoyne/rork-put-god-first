@@ -65,7 +65,7 @@ enum NotificationService {
     ]
 
     static func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound, .providesAppNotificationSettings]) { granted, _ in
             if granted {
                 scheduleAllNotifications()
             }
@@ -110,6 +110,8 @@ enum NotificationService {
             morningContent.body = morningMsg.body
             morningContent.sound = .default
             morningContent.interruptionLevel = .timeSensitive
+            morningContent.categoryIdentifier = "OPEN_APP"
+            morningContent.userInfo = ["deepLink": "putgodfirst://start-session"]
 
             let reminderTime = savedReminderTime
             let timeComps = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
@@ -126,6 +128,8 @@ enum NotificationService {
             secondContent.body = secondMsg.body
             secondContent.sound = .default
             secondContent.interruptionLevel = .timeSensitive
+            secondContent.categoryIdentifier = "OPEN_APP"
+            secondContent.userInfo = ["deepLink": "putgodfirst://start-session"]
 
             var secondComps = Calendar.current.dateComponents([.year, .month, .day], from: futureDate)
             let hours = [12, 17, 20]

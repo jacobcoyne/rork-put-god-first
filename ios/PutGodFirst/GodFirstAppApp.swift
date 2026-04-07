@@ -98,39 +98,68 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         guard st.godFirstModeActive || st.godFirstModeEnrolled else { return }
 
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: [
-            "midnight-relock-0", "midnight-relock-1", "midnight-relock-2",
-            "midnight-relock-3", "midnight-relock-4", "midnight-relock-5",
-            "midnight-relock-6"
-        ])
+        var idsToRemove: [String] = []
+        for i in 0..<7 {
+            idsToRemove.append("midnight-relock-\(i)")
+            idsToRemove.append("morning-locked-\(i)")
+        }
+        center.removePendingNotificationRequests(withIdentifiers: idsToRemove)
 
         for dayOffset in 0..<7 {
-            let content = UNMutableNotificationContent()
-            content.title = "Put God First 🙏"
-            content.body = "Your apps are locked. Start your morning with God."
-            content.sound = nil
-            content.interruptionLevel = .passive
-            content.userInfo = ["relockTrigger": true, "silent": true]
+            let relockContent = UNMutableNotificationContent()
+            relockContent.title = "Put God First 🙏"
+            relockContent.body = "Your apps are locked. Start your morning with God."
+            relockContent.sound = nil
+            relockContent.interruptionLevel = .passive
+            relockContent.userInfo = ["relockTrigger": true, "silent": true]
 
-            var comps = DateComponents()
-            comps.hour = 0
-            comps.minute = 1
+            var relockComps = DateComponents()
+            relockComps.hour = 0
+            relockComps.minute = 1
             if dayOffset > 0 {
                 if let future = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) {
                     let futureComps = Calendar.current.dateComponents([.year, .month, .day], from: future)
-                    comps.year = futureComps.year
-                    comps.month = futureComps.month
-                    comps.day = futureComps.day
+                    relockComps.year = futureComps.year
+                    relockComps.month = futureComps.month
+                    relockComps.day = futureComps.day
                 }
             }
 
-            let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: dayOffset == 0)
-            let request = UNNotificationRequest(
+            let relockTrigger = UNCalendarNotificationTrigger(dateMatching: relockComps, repeats: dayOffset == 0)
+            center.add(UNNotificationRequest(
                 identifier: "midnight-relock-\(dayOffset)",
-                content: content,
-                trigger: trigger
-            )
-            center.add(request)
+                content: relockContent,
+                trigger: relockTrigger
+            ))
+
+            let lockedContent = UNMutableNotificationContent()
+            lockedContent.title = "Your Apps Are Locked 🔒"
+            lockedContent.body = "Open Put God First and complete your morning session to unlock your apps."
+            lockedContent.sound = .default
+            lockedContent.interruptionLevel = .timeSensitive
+            lockedContent.categoryIdentifier = "OPEN_APP"
+            lockedContent.userInfo = ["deepLink": "putgodfirst://start-session"]
+
+            let reminderTime = NotificationService.savedReminderTime
+            let timeComps = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+            var lockedComps = DateComponents()
+            lockedComps.hour = timeComps.hour
+            lockedComps.minute = timeComps.minute
+            if dayOffset > 0 {
+                if let future = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) {
+                    let futureComps = Calendar.current.dateComponents([.year, .month, .day], from: future)
+                    lockedComps.year = futureComps.year
+                    lockedComps.month = futureComps.month
+                    lockedComps.day = futureComps.day
+                }
+            }
+
+            let lockedTrigger = UNCalendarNotificationTrigger(dateMatching: lockedComps, repeats: dayOffset == 0)
+            center.add(UNNotificationRequest(
+                identifier: "morning-locked-\(dayOffset)",
+                content: lockedContent,
+                trigger: lockedTrigger
+            ))
         }
     }
 }
@@ -191,6 +220,13 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
                 await MainActor.run {
                     DeepLinkManager.shared.pendingAction = .openSession
                 }
+            }
+            return
+        }
+
+        if isDefaultTap {
+            await MainActor.run {
+                DeepLinkManager.shared.pendingAction = .openSession
             }
         }
     }
