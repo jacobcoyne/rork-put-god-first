@@ -28,7 +28,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         let lastSentKey = "lastNotifTime_\(key)"
         let lastSent = sharedDefaults?.double(forKey: lastSentKey) ?? 0
         let now = Date().timeIntervalSince1970
-        if now - lastSent < 3600 {
+        if now - lastSent < 10 {
             return true
         }
         sharedDefaults?.set(now, forKey: lastSentKey)
@@ -51,10 +51,11 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
 
+        let uniqueId = "godFirst.timeLimitShield.\(Int(Date().timeIntervalSince1970))"
         let request = UNNotificationRequest(
-            identifier: "godFirst.timeLimitShield",
+            identifier: uniqueId,
             content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
     }
@@ -88,13 +89,14 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
 
-        let notifKey = isTimeLimitBlocking ? "timeLimitShield" : (hasCompletedToday ? "scriptureUnlock" : "morningSession")
+        let notifKey = hasCompletedToday ? "scriptureUnlock" : "morningSession"
         guard !shouldThrottleNotification(key: notifKey) else { return }
 
+        let uniqueId = "godFirst.openApp.\(Int(Date().timeIntervalSince1970))"
         let request = UNNotificationRequest(
-            identifier: "godFirst.openApp",
+            identifier: uniqueId,
             content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
     }
