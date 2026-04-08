@@ -317,15 +317,15 @@ final class ScreenTimeService {
         let center = DeviceActivityCenter()
 
         let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
-            (.eveningEnforce,      20,  0, 20, 30),
+            (.eveningEnforce,      21,  0, 21, 30),
             (.nightEnforce,        22,  0, 22, 30),
-            (.lateNightPrep,       23,  0, 23, 29),
-            (.preMidnightLock,     23, 30, 23, 59),
-            (.midnightReblock,      0,  0,  0, 15),
-            (.earlyMorningBackup,   1,  0,  1, 15),
-            (.preDawnBackup,        3,  0,  3, 15),
-            (.morningBackup,        5,  0,  5, 15),
-            (.lateMorningBackup,    7,  0,  7, 15),
+            (.lateNightPrep,       23,  0, 23, 25),
+            (.preMidnightLock,     23, 26, 23, 58),
+            (.midnightReblock,      0,  0,  0, 30),
+            (.earlyMorningBackup,   2,  0,  2, 30),
+            (.preDawnBackup,        4,  0,  4, 30),
+            (.morningBackup,        6,  0,  6, 30),
+            (.lateMorningBackup,    8,  0,  8, 30),
         ]
 
         for (name, startH, startM, endH, endM) in schedules {
