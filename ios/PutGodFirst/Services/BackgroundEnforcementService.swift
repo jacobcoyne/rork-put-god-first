@@ -32,7 +32,7 @@ enum BackgroundEnforcementService {
 
     static func scheduleEnforcementCheck() {
         let request = BGAppRefreshTaskRequest(identifier: enforcementCheckTaskID)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60)
         try? BGTaskScheduler.shared.submit(request)
     }
 
@@ -44,6 +44,7 @@ enum BackgroundEnforcementService {
         let st = ScreenTimeService.shared
         if st.isAuthorized && (st.godFirstModeActive || st.godFirstModeEnrolled) {
             st.performMidnightReset()
+            NotificationService.scheduleMidnightRelockNotifications()
         }
 
         task.setTaskCompleted(success: true)
