@@ -23,7 +23,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         return Calendar.current.isDateInToday(d)
     }
 
-    private func sendTimeLimitChallengeNotification() {
+    private func sendTimeLimitChallengeNotification(completion: @escaping () -> Void) {
         let content = UNMutableNotificationContent()
         content.title = "Screen Time Limit Reached \u{23F0}"
         content.body = "Tap this notification to open Put God First and complete a challenge."
@@ -37,17 +37,23 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.relevanceScore = 1.0
 
         let uniqueId = "godFirst.timeLimitShield.\(Int(Date().timeIntervalSince1970 * 1000))"
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
         let request = UNNotificationRequest(
             identifier: uniqueId,
             content: content,
-            trigger: nil
+            trigger: trigger
         )
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { _ in
+            completion()
+        }
     }
 
-    private func sendOpenAppNotification() {
+    private func sendOpenAppNotification(completion: @escaping () -> Void) {
+        sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "shieldTapTimestamp")
+        sharedDefaults?.synchronize()
+
         if isTimeLimitBlocking {
-            sendTimeLimitChallengeNotification()
+            sendTimeLimitChallengeNotification(completion: completion)
             return
         }
 
@@ -75,19 +81,23 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.relevanceScore = 1.0
 
         let uniqueId = "godFirst.openApp.\(Int(Date().timeIntervalSince1970 * 1000))"
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
         let request = UNNotificationRequest(
             identifier: uniqueId,
             content: content,
-            trigger: nil
+            trigger: trigger
         )
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { _ in
+            completion()
+        }
     }
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
-            sendOpenAppNotification()
-            completionHandler(.close)
+            sendOpenAppNotification {
+                completionHandler(.close)
+            }
         case .secondaryButtonPressed:
             completionHandler(.close)
         @unknown default:
@@ -98,8 +108,9 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
-            sendOpenAppNotification()
-            completionHandler(.close)
+            sendOpenAppNotification {
+                completionHandler(.close)
+            }
         case .secondaryButtonPressed:
             completionHandler(.close)
         @unknown default:
@@ -110,8 +121,9 @@ class ShieldActionExtension: ShieldActionDelegate {
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
-            sendOpenAppNotification()
-            completionHandler(.close)
+            sendOpenAppNotification {
+                completionHandler(.close)
+            }
         case .secondaryButtonPressed:
             completionHandler(.close)
         @unknown default:
