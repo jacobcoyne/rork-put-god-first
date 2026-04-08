@@ -121,7 +121,9 @@ final class ScreenTimeLimitService {
 
         stopMonitoring()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+            saveTimeLimitSelection()
+            sharedDefaults?.synchronize()
             startMonitoringFresh()
         }
     }
@@ -130,6 +132,9 @@ final class ScreenTimeLimitService {
         guard isEnabled else { return }
         guard hasTimeLimitAppsSelected else { return }
         guard ScreenTimeService.shared.isAuthorized else { return }
+
+        saveTimeLimitSelection()
+        sharedDefaults?.synchronize()
 
         let center = DeviceActivityCenter()
         let alreadyRunning = center.activities.contains(.screenTimeLimit)
@@ -152,11 +157,13 @@ final class ScreenTimeLimitService {
         let center = DeviceActivityCenter()
         center.stopMonitoring([.screenTimeLimit])
 
+        let warningMinutes = max(1, dailyLimitMinutes - 1)
+
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: nil
+            warningTime: DateComponents(minute: 5)
         )
 
         let event = DeviceActivityEvent(
@@ -166,11 +173,23 @@ final class ScreenTimeLimitService {
             threshold: DateComponents(minute: dailyLimitMinutes)
         )
 
+        let warningEvent = DeviceActivityEvent(
+            applications: timeLimitSelection.applicationTokens,
+            categories: timeLimitSelection.categoryTokens,
+            webDomains: timeLimitSelection.webDomainTokens,
+            threshold: DateComponents(minute: warningMinutes)
+        )
+
+        let warningEventName = DeviceActivityEvent.Name("godFirst.timeLimitWarning")
+
         do {
             try center.startMonitoring(
                 .screenTimeLimit,
                 during: schedule,
-                events: [.timeLimitReached: event]
+                events: [
+                    .timeLimitReached: event,
+                    warningEventName: warningEvent
+                ]
             )
             isMonitoringActive = true
             sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
