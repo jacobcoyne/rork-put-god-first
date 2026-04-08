@@ -12,6 +12,8 @@ nonisolated extension DeviceActivityName {
     static let morningBackup = Self("godFirst.morningBackup")
     static let lateMorningBackup = Self("godFirst.lateMorningBackup")
     static let middayBackup = Self("godFirst.middayBackup")
+    static let afternoonBackup = Self("godFirst.afternoonBackup")
+    static let lateAfternoonBackup = Self("godFirst.lateAfternoonBackup")
     static let lateNightPrep = Self("godFirst.lateNightPrep")
     static let preMidnightLock = Self("godFirst.preMidnightLock")
     static let eveningEnforce = Self("godFirst.eveningEnforce")
@@ -21,7 +23,7 @@ nonisolated extension DeviceActivityName {
         .eveningEnforce, .nightEnforce, .lateNightPrep, .preMidnightLock,
         .midnightReblock, .postMidnightBackup, .earlyMorningBackup,
         .preDawnBackup, .dawnBackup, .morningBackup, .lateMorningBackup,
-        .middayBackup
+        .middayBackup, .afternoonBackup, .lateAfternoonBackup
     ]
 }
 
@@ -333,6 +335,8 @@ final class ScreenTimeService {
             (.morningBackup,         6,  0,  6, 55),
             (.lateMorningBackup,     7,  0,  8, 55),
             (.middayBackup,          9,  0, 11, 55),
+            (.afternoonBackup,      12,  0, 15, 55),
+            (.lateAfternoonBackup,  16,  0, 19, 55),
         ]
 
         for (name, startH, startM, endH, endM) in schedules {

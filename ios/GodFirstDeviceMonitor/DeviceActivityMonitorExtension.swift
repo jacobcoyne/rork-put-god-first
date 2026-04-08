@@ -120,11 +120,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let active = isGodFirstModeActive
         let hasApps = hasAppsSelected
 
-        if enrolled || active {
-            forceGodFirstModeOn()
-        }
-
         if enrolled || active || hasApps {
+            forceGodFirstModeOn()
             if !hasCompletedToday && !wasScriptureUnlockedToday {
                 applyShields()
             }
@@ -149,6 +146,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return name == "godFirst.eveningEnforce" || name == "godFirst.nightEnforce"
     }
 
+    private func isEarlyMorningActivity(_ activity: DeviceActivityName) -> Bool {
+        let name = activity.rawValue
+        return name == "godFirst.postMidnightBackup"
+            || name == "godFirst.earlyMorningBackup"
+            || name == "godFirst.preDawnBackup"
+            || name == "godFirst.dawnBackup"
+            || name == "godFirst.morningBackup"
+            || name == "godFirst.lateMorningBackup"
+            || name == "godFirst.middayBackup"
+            || name == "godFirst.afternoonBackup"
+            || name == "godFirst.lateAfternoonBackup"
+    }
+
     // MARK: - DeviceActivityMonitor Callbacks
 
     override func intervalDidStart(for activity: DeviceActivityName) {
@@ -171,6 +181,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
+        if isEarlyMorningActivity(activity) {
+            forceNewDayReset()
+            return
+        }
+
         alwaysEnforceBlocking()
     }
 
@@ -179,6 +194,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         syncDefaults()
 
         if isScreenTimeLimitActivity(activity) { return }
+
+        if isMidnightActivity(activity) || isPreMidnightActivity(activity) || isEarlyMorningActivity(activity) {
+            forceNewDayReset()
+            return
+        }
 
         alwaysEnforceBlocking()
     }
