@@ -5,10 +5,13 @@ import DeviceActivity
 
 nonisolated extension DeviceActivityName {
     static let midnightReblock = Self("godFirst.midnightReblock")
+    static let postMidnightBackup = Self("godFirst.postMidnightBackup")
     static let earlyMorningBackup = Self("godFirst.earlyMorningBackup")
     static let preDawnBackup = Self("godFirst.preDawnBackup")
+    static let dawnBackup = Self("godFirst.dawnBackup")
     static let morningBackup = Self("godFirst.morningBackup")
     static let lateMorningBackup = Self("godFirst.lateMorningBackup")
+    static let middayBackup = Self("godFirst.middayBackup")
     static let lateNightPrep = Self("godFirst.lateNightPrep")
     static let preMidnightLock = Self("godFirst.preMidnightLock")
     static let eveningEnforce = Self("godFirst.eveningEnforce")
@@ -16,8 +19,9 @@ nonisolated extension DeviceActivityName {
 
     static let allGodFirstActivities: [DeviceActivityName] = [
         .eveningEnforce, .nightEnforce, .lateNightPrep, .preMidnightLock,
-        .midnightReblock, .earlyMorningBackup, .preDawnBackup,
-        .morningBackup, .lateMorningBackup
+        .midnightReblock, .postMidnightBackup, .earlyMorningBackup,
+        .preDawnBackup, .dawnBackup, .morningBackup, .lateMorningBackup,
+        .middayBackup
     ]
 }
 
@@ -317,15 +321,18 @@ final class ScreenTimeService {
         let center = DeviceActivityCenter()
 
         let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
-            (.eveningEnforce,      21,  0, 21, 30),
-            (.nightEnforce,        22,  0, 22, 30),
-            (.lateNightPrep,       23,  0, 23, 25),
-            (.preMidnightLock,     23, 26, 23, 58),
-            (.midnightReblock,      0,  0,  0, 30),
-            (.earlyMorningBackup,   2,  0,  2, 30),
-            (.preDawnBackup,        4,  0,  4, 30),
-            (.morningBackup,        6,  0,  6, 30),
-            (.lateMorningBackup,    8,  0,  8, 30),
+            (.eveningEnforce,       20,  0, 20, 55),
+            (.nightEnforce,         21,  0, 21, 55),
+            (.lateNightPrep,        22,  0, 22, 55),
+            (.preMidnightLock,      23,  0, 23, 58),
+            (.midnightReblock,       0,  0,  0, 55),
+            (.postMidnightBackup,    1,  0,  1, 55),
+            (.earlyMorningBackup,    2,  0,  2, 55),
+            (.preDawnBackup,         3,  0,  4, 55),
+            (.dawnBackup,            5,  0,  5, 55),
+            (.morningBackup,         6,  0,  6, 55),
+            (.lateMorningBackup,     7,  0,  8, 55),
+            (.middayBackup,          9,  0, 11, 55),
         ]
 
         for (name, startH, startM, endH, endM) in schedules {
@@ -333,7 +340,7 @@ final class ScreenTimeService {
                 intervalStart: DateComponents(hour: startH, minute: startM, second: 0),
                 intervalEnd: DateComponents(hour: endH, minute: endM, second: 0),
                 repeats: true,
-                warningTime: nil
+                warningTime: DateComponents(minute: 5)
             )
             do {
                 try center.startMonitoring(name, during: schedule)

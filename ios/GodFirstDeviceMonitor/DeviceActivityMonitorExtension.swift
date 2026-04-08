@@ -112,17 +112,20 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         applyShields()
     }
 
-    private func enforceBlockingIfNeeded() {
+    private func alwaysEnforceBlocking() {
         clearStaleUnlockData()
         syncDefaults()
 
-        let modeActive = isGodFirstModeActive || isGodFirstModeEnrolled
-        if modeActive {
+        let enrolled = isGodFirstModeEnrolled
+        let active = isGodFirstModeActive
+        let hasApps = hasAppsSelected
+
+        if enrolled || active {
             forceGodFirstModeOn()
         }
 
-        if !hasCompletedToday && !wasScriptureUnlockedToday {
-            if modeActive || hasAppsSelected {
+        if enrolled || active || hasApps {
+            if !hasCompletedToday && !wasScriptureUnlockedToday {
                 applyShields()
             }
         }
@@ -168,7 +171,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        enforceBlockingIfNeeded()
+        alwaysEnforceBlocking()
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
@@ -177,14 +180,14 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         if isScreenTimeLimitActivity(activity) { return }
 
-        enforceBlockingIfNeeded()
+        alwaysEnforceBlocking()
     }
 
     override func intervalWillStartWarning(for activity: DeviceActivityName) {
         super.intervalWillStartWarning(for: activity)
         syncDefaults()
         if isScreenTimeLimitActivity(activity) { return }
-        enforceBlockingIfNeeded()
+        alwaysEnforceBlocking()
     }
 
     override func intervalWillEndWarning(for activity: DeviceActivityName) {
@@ -197,7 +200,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
-        enforceBlockingIfNeeded()
+        alwaysEnforceBlocking()
     }
 
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
