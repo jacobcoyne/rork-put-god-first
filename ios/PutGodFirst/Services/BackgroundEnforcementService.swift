@@ -64,6 +64,7 @@ enum BackgroundEnforcementService {
 
         let stl = ScreenTimeLimitService.shared
         stl.checkAndEnforceFromForeground()
+        stl.ensureMonitoringActive()
 
         task.setTaskCompleted(success: true)
 

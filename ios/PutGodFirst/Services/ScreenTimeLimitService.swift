@@ -5,6 +5,14 @@ import DeviceActivity
 
 nonisolated extension DeviceActivityName {
     static let screenTimeLimit = Self("godFirst.screenTimeLimit")
+    static let timeLimitBackup1 = Self("godFirst.timeLimitBackup1")
+    static let timeLimitBackup2 = Self("godFirst.timeLimitBackup2")
+    static let timeLimitBackup3 = Self("godFirst.timeLimitBackup3")
+    static let timeLimitBackup4 = Self("godFirst.timeLimitBackup4")
+
+    static let allTimeLimitActivities: [DeviceActivityName] = [
+        .screenTimeLimit, .timeLimitBackup1, .timeLimitBackup2, .timeLimitBackup3, .timeLimitBackup4
+    ]
 }
 
 nonisolated extension DeviceActivityEvent.Name {
@@ -18,6 +26,8 @@ nonisolated extension ManagedSettingsStore.Name {
 @Observable
 final class ScreenTimeLimitService {
     static let shared = ScreenTimeLimitService()
+
+    static let minimumThresholdMinutes: Int = 15
 
     var isEnabled: Bool {
         didSet {
@@ -67,6 +77,10 @@ final class ScreenTimeLimitService {
     private let store = ManagedSettingsStore(named: .screenTimeLimit)
     private let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
     private var isMonitoringActive: Bool = false
+
+    var effectiveThresholdMinutes: Int {
+        max(dailyLimitMinutes, Self.minimumThresholdMinutes)
+    }
 
     var hasTimeLimitAppsSelected: Bool {
         !timeLimitSelection.applicationTokens.isEmpty || !timeLimitSelection.categoryTokens.isEmpty
@@ -121,8 +135,9 @@ final class ScreenTimeLimitService {
 
         stopMonitoring()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
             startMonitoringFresh()
+            scheduleBackupMonitoring()
         }
     }
 
@@ -136,8 +151,10 @@ final class ScreenTimeLimitService {
 
         if alreadyRunning {
             isMonitoringActive = true
+            scheduleBackupMonitoring()
         } else {
             startMonitoringFresh()
+            scheduleBackupMonitoring()
         }
     }
 
@@ -152,18 +169,21 @@ final class ScreenTimeLimitService {
         let center = DeviceActivityCenter()
         center.stopMonitoring([.screenTimeLimit])
 
+        let threshold = effectiveThresholdMinutes
+        let warningMinutes = max(threshold - 2, 1)
+
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: nil
+            warningTime: DateComponents(minute: warningMinutes)
         )
 
         let event = DeviceActivityEvent(
             applications: timeLimitSelection.applicationTokens,
             categories: timeLimitSelection.categoryTokens,
             webDomains: timeLimitSelection.webDomainTokens,
-            threshold: DateComponents(minute: dailyLimitMinutes)
+            threshold: DateComponents(minute: threshold)
         )
 
         do {
@@ -175,15 +195,42 @@ final class ScreenTimeLimitService {
             isMonitoringActive = true
             sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
             sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "screenTimeLimitMonitoringStarted")
+            sharedDefaults?.set(false, forKey: "timeLimitThresholdReached")
+            sharedDefaults?.set(false, forKey: "timeLimitWarningFired")
             sharedDefaults?.synchronize()
         } catch {
             isMonitoringActive = false
         }
     }
 
+    func scheduleBackupMonitoring() {
+        guard isEnabled else { return }
+        guard hasTimeLimitAppsSelected else { return }
+        guard ScreenTimeService.shared.isAuthorized else { return }
+
+        let center = DeviceActivityCenter()
+
+        let backupSchedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
+            (.timeLimitBackup1,  6,  0,  6, 30),
+            (.timeLimitBackup2, 10,  0, 10, 30),
+            (.timeLimitBackup3, 14,  0, 14, 30),
+            (.timeLimitBackup4, 19,  0, 19, 30),
+        ]
+
+        for (name, startH, startM, endH, endM) in backupSchedules {
+            let schedule = DeviceActivitySchedule(
+                intervalStart: DateComponents(hour: startH, minute: startM, second: 0),
+                intervalEnd: DateComponents(hour: endH, minute: endM, second: 0),
+                repeats: true,
+                warningTime: nil
+            )
+            try? center.startMonitoring(name, during: schedule)
+        }
+    }
+
     func stopMonitoring() {
         let center = DeviceActivityCenter()
-        center.stopMonitoring([.screenTimeLimit])
+        center.stopMonitoring(DeviceActivityName.allTimeLimitActivities)
         isMonitoringActive = false
         sharedDefaults?.set(false, forKey: "screenTimeLimitMonitoringActive")
         sharedDefaults?.synchronize()
@@ -203,6 +250,7 @@ final class ScreenTimeLimitService {
 
         isTimeLimitLocked = true
         sharedDefaults?.set(true, forKey: "isTimeLimitBlocking")
+        sharedDefaults?.set(true, forKey: "timeLimitThresholdReached")
         sharedDefaults?.synchronize()
     }
 
@@ -212,6 +260,7 @@ final class ScreenTimeLimitService {
         store.shield.webDomains = nil
         isTimeLimitLocked = false
         sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
+        sharedDefaults?.set(false, forKey: "timeLimitThresholdReached")
         sharedDefaults?.synchronize()
     }
 
@@ -234,8 +283,10 @@ final class ScreenTimeLimitService {
         reloadTimeLimitSelection()
         sharedDefaults?.synchronize()
         let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
+        let thresholdReached = sharedDefaults?.bool(forKey: "timeLimitThresholdReached") ?? false
         let isToday = isTimeLimitLockFromToday()
-        if locked && isToday && !wasTimeLimitUnlockedToday() {
+
+        if (locked || thresholdReached) && isToday && !wasTimeLimitUnlockedToday() {
             reapplyShields()
         }
         if isEnabled && hasTimeLimitAppsSelected {
@@ -257,8 +308,12 @@ final class ScreenTimeLimitService {
         }
 
         let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
-        if locked && isTimeLimitLockFromToday() && !wasTimeLimitUnlockedToday() {
+        let thresholdReached = sharedDefaults?.bool(forKey: "timeLimitThresholdReached") ?? false
+        if (locked || thresholdReached) && isTimeLimitLockFromToday() && !wasTimeLimitUnlockedToday() {
             reapplyShields()
+            if !locked {
+                isTimeLimitLocked = true
+            }
             return
         }
 
@@ -307,6 +362,8 @@ final class ScreenTimeLimitService {
             if !Calendar.current.isDateInToday(d) {
                 sharedDefaults?.set(false, forKey: "isTimeLimitLocked")
                 sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
+                sharedDefaults?.set(false, forKey: "timeLimitThresholdReached")
+                sharedDefaults?.set(false, forKey: "timeLimitWarningFired")
                 sharedDefaults?.removeObject(forKey: "lastTimeLimitUnlockTimestamp")
                 sharedDefaults?.removeObject(forKey: "timeLimitLockTimestamp")
                 sharedDefaults?.synchronize()

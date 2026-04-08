@@ -14,6 +14,10 @@ struct ScreenTimeLimitSettingsView: View {
 
     private let presetMinutes: [Int] = [15, 30, 45, 60, 90, 120]
 
+    private var effectiveMinutes: Int {
+        max(dailyMinutes, ScreenTimeLimitService.minimumThresholdMinutes)
+    }
+
     private var selectedCount: Int {
         activitySelection.applicationTokens.count + activitySelection.categoryTokens.count
     }
@@ -223,7 +227,7 @@ struct ScreenTimeLimitSettingsView: View {
             }
             .contentMargins(.horizontal, 0)
 
-            Stepper(value: $dailyMinutes, in: 5...480, step: 5) {
+            Stepper(value: $dailyMinutes, in: 15...480, step: 5) {
                 HStack(spacing: 6) {
                     Text("Custom:")
                         .font(.system(size: 14, weight: .medium))

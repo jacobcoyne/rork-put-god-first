@@ -132,6 +132,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         activity.rawValue == "godFirst.screenTimeLimit"
     }
 
+    private func isTimeLimitBackupActivity(_ activity: DeviceActivityName) -> Bool {
+        activity.rawValue.hasPrefix("godFirst.timeLimitBackup")
+    }
+
     private func isPreMidnightActivity(_ activity: DeviceActivityName) -> Bool {
         let name = activity.rawValue
         return name == "godFirst.preMidnightLock" || name == "godFirst.lateNightPrep"
@@ -157,6 +161,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
 
+        if isTimeLimitBackupActivity(activity) {
+            handleTimeLimitBackupCheck()
+            return
+        }
+
         if isMidnightActivity(activity) {
             forceNewDayReset()
             clearTimeLimitDataForNewDay()
@@ -176,6 +185,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         syncDefaults()
 
         if isScreenTimeLimitActivity(activity) { return }
+        if isTimeLimitBackupActivity(activity) { return }
 
         enforceBlockingIfNeeded()
     }
@@ -184,6 +194,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalWillStartWarning(for: activity)
         syncDefaults()
         if isScreenTimeLimitActivity(activity) { return }
+        if isTimeLimitBackupActivity(activity) { return }
         enforceBlockingIfNeeded()
     }
 
@@ -191,6 +202,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalWillEndWarning(for: activity)
         syncDefaults()
         if isScreenTimeLimitActivity(activity) { return }
+        if isTimeLimitBackupActivity(activity) { return }
 
         if isPreMidnightActivity(activity) {
             forceNewDayReset()
@@ -209,11 +221,21 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             guard isEnabled else { return }
             guard !wasTimeLimitUnlockedToday else { return }
             applyTimeLimitShields()
+            markTimeLimitThresholdReached()
         }
     }
 
     override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventWillReachThresholdWarning(event, activity: activity)
+        syncDefaults()
+
+        if activity.rawValue == "godFirst.screenTimeLimit" && event.rawValue == "godFirst.timeLimitReached" {
+            let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+            guard isEnabled else { return }
+            guard !wasTimeLimitUnlockedToday else { return }
+            sharedDefaults?.set(true, forKey: "timeLimitWarningFired")
+            sharedDefaults?.synchronize()
+        }
     }
 
     // MARK: - Screen Time Limit
@@ -235,7 +257,42 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         clearTimeLimitDataForNewDay()
-        restartTimeLimitMonitoringForNewDay()
+        sharedDefaults?.set(false, forKey: "timeLimitWarningFired")
+        sharedDefaults?.set(false, forKey: "timeLimitThresholdReached")
+        sharedDefaults?.synchronize()
+    }
+
+    private func handleTimeLimitBackupCheck() {
+        syncDefaults()
+        let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+        guard isEnabled else { return }
+        guard !wasTimeLimitUnlockedToday else { return }
+
+        let alreadyLocked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
+        let thresholdReached = sharedDefaults?.bool(forKey: "timeLimitThresholdReached") == true
+
+        if alreadyLocked || thresholdReached {
+            if let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 {
+                let d = Date(timeIntervalSince1970: ts)
+                if Calendar.current.isDateInToday(d) {
+                    applyTimeLimitShields()
+                    return
+                }
+            }
+            if thresholdReached {
+                applyTimeLimitShields()
+            }
+        }
+
+        let timeLimitMonitoringActive = sharedDefaults?.bool(forKey: "screenTimeLimitMonitoringActive") == true
+        if !timeLimitMonitoringActive {
+            restartTimeLimitMonitoring()
+        }
+    }
+
+    private func markTimeLimitThresholdReached() {
+        sharedDefaults?.set(true, forKey: "timeLimitThresholdReached")
+        sharedDefaults?.synchronize()
     }
 
     private var wasTimeLimitUnlockedToday: Bool {
@@ -283,6 +340,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             if !Calendar.current.isDateInToday(d) {
                 sharedDefaults?.set(false, forKey: "isTimeLimitLocked")
                 sharedDefaults?.set(false, forKey: "isTimeLimitBlocking")
+                sharedDefaults?.set(false, forKey: "timeLimitThresholdReached")
+                sharedDefaults?.set(false, forKey: "timeLimitWarningFired")
                 sharedDefaults?.removeObject(forKey: "lastTimeLimitUnlockTimestamp")
                 sharedDefaults?.removeObject(forKey: "timeLimitLockTimestamp")
                 sharedDefaults?.synchronize()
@@ -293,7 +352,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
     }
 
-    private func restartTimeLimitMonitoringForNewDay() {
+    private func restartTimeLimitMonitoring() {
         syncDefaults()
         let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
         guard isEnabled else { return }
@@ -301,12 +360,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         guard let selection = loadTimeLimitSelection() else { return }
         guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else { return }
 
-        let minutes = sharedDefaults?.integer(forKey: "screenTimeLimitMinutes") ?? 30
+        let savedMinutes = sharedDefaults?.integer(forKey: "screenTimeLimitMinutes") ?? 30
+        let minutes = max(savedMinutes, 15)
         guard minutes > 0 else { return }
 
         let center = DeviceActivityCenter()
         let activityName = DeviceActivityName("godFirst.screenTimeLimit")
-        center.stopMonitoring([activityName])
 
         let schedule = DeviceActivitySchedule(
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
@@ -315,6 +374,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             warningTime: nil
         )
 
+        let warningMinutes = max(minutes - 2, 1)
         let eventName = DeviceActivityEvent.Name("godFirst.timeLimitReached")
         let event = DeviceActivityEvent(
             applications: selection.applicationTokens,
@@ -328,6 +388,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             during: schedule,
             events: [eventName: event]
         )
+
+        sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
+        sharedDefaults?.synchronize()
     }
 
     private func shouldThrottleNotification(key: String) -> Bool {
