@@ -165,6 +165,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
+    private func clearSharedPendingLink() {
+        let shared = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
+        shared?.removeObject(forKey: "pendingShieldDeepLink")
+        shared?.synchronize()
+    }
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let categoryId = response.notification.request.content.categoryIdentifier
         let actionId = response.actionIdentifier
@@ -186,6 +192,8 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
             }
             return
         }
+
+        clearSharedPendingLink()
 
         if let deepLink = userInfo["deepLink"] as? String, let url = URL(string: deepLink) {
             await MainActor.run {
@@ -212,7 +220,7 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
         if categoryId == "SHIELD_TAP" || categoryId == "OPEN_APP" {
             let isPostSession = userInfo["isPostSession"] as? Bool ?? false
 
-            if isPostSession || actionId == "RECITE_SCRIPTURE" || (isDefaultTap && categoryId == "SHIELD_TAP") {
+            if isPostSession || actionId == "RECITE_SCRIPTURE" {
                 await MainActor.run {
                     DeepLinkManager.shared.pendingAction = .scriptureUnlock
                 }

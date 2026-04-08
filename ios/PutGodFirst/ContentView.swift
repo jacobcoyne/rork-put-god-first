@@ -74,6 +74,7 @@ struct ContentView: View {
             )
         }
         .onAppear {
+            DeepLinkManager.shared.checkSharedDefaultsForPendingLink()
             handlePendingDeepLink()
             ensureInitialLocking()
         }
@@ -124,6 +125,8 @@ struct ContentView: View {
                 DeepLinkManager.shared.pendingAction = .timeLimitUnlock
             }
         }
+
+        DeepLinkManager.shared.checkSharedDefaultsForPendingLink()
     }
 
     private func ensureInitialLocking() {
