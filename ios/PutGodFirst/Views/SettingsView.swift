@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 import AuthenticationServices
 import RevenueCat
+import UserNotifications
 
 struct SettingsView: View {
     @Bindable var viewModel: AppViewModel
@@ -16,6 +17,8 @@ struct SettingsView: View {
     @State private var morningReminderTime: Date = NotificationService.savedReminderTime
     @State private var showTimePicker: Bool = false
     @State private var showScreenTimeLimitSettings: Bool = false
+    @State private var notificationsEnabled: Bool = false
+    @State private var notificationStatusChecked: Bool = false
 
     private let authService = AuthenticationService.shared
 
@@ -77,6 +80,10 @@ struct SettingsView: View {
             }
             .onAppear {
                 authService.checkCredentialState()
+                checkNotificationStatus()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                checkNotificationStatus()
             }
             .task {
                 if SubscriptionService.shared.offerings == nil {
@@ -292,6 +299,45 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
+            HStack(spacing: 12) {
+                Image(systemName: notificationsEnabled ? "bell.badge.fill" : "bell.slash.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(notificationsEnabled ? Theme.successEmerald : .red)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Notifications")
+                        .font(.system(size: 16, weight: .medium))
+                    Text(notificationsEnabled ? "Enabled" : "Disabled")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(notificationsEnabled ? Theme.successEmerald : .red)
+                }
+                Spacer()
+                if !notificationsEnabled && notificationStatusChecked {
+                    Button {
+                        openNotificationSettings()
+                    } label: {
+                        Text("Enable")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(Theme.icePurple)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+
+            if !notificationsEnabled && notificationStatusChecked {
+                HStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.orange)
+                    Text("Turn on notifications for morning reminders, app unlock alerts, and streak updates.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .listRowBackground(Color.orange.opacity(0.08))
+            }
+
             Button {
                 withAnimation { showTimePicker.toggle() }
             } label: {
@@ -323,6 +369,33 @@ struct SettingsView: View {
         } header: {
             Text("Notifications")
                 .font(.system(size: 13, weight: .bold))
+        }
+    }
+
+    private func checkNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            Task { @MainActor in
+                notificationsEnabled = settings.authorizationStatus == .authorized
+                notificationStatusChecked = true
+            }
+        }
+    }
+
+    private func openNotificationSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            Task { @MainActor in
+                if settings.authorizationStatus == .notDetermined {
+                    NotificationService.requestPermission()
+                    Task {
+                        try? await Task.sleep(for: .seconds(1))
+                        checkNotificationStatus()
+                    }
+                } else {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
         }
     }
 
