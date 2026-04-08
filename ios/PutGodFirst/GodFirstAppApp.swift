@@ -101,36 +101,39 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         var idsToRemove: [String] = []
         for i in 0..<7 {
             idsToRemove.append("midnight-relock-\(i)")
+            idsToRemove.append("pre-midnight-relock-\(i)")
+            idsToRemove.append("early-morning-relock-\(i)")
             idsToRemove.append("morning-locked-\(i)")
         }
         center.removePendingNotificationRequests(withIdentifiers: idsToRemove)
 
         for dayOffset in 0..<7 {
-            let relockContent = UNMutableNotificationContent()
-            relockContent.title = "Put God First 🙏"
-            relockContent.body = "Your apps are locked. Start your morning with God."
-            relockContent.sound = nil
-            relockContent.interruptionLevel = .passive
-            relockContent.userInfo = ["relockTrigger": true, "silent": true]
+            func addSilentRelock(hour: Int, minute: Int, id: String) {
+                let content = UNMutableNotificationContent()
+                content.title = "Put God First 🙏"
+                content.body = "Your apps are locked. Start your morning with God."
+                content.sound = nil
+                content.interruptionLevel = .passive
+                content.userInfo = ["relockTrigger": true, "silent": true]
 
-            var relockComps = DateComponents()
-            relockComps.hour = 0
-            relockComps.minute = 1
-            if dayOffset > 0 {
-                if let future = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) {
-                    let futureComps = Calendar.current.dateComponents([.year, .month, .day], from: future)
-                    relockComps.year = futureComps.year
-                    relockComps.month = futureComps.month
-                    relockComps.day = futureComps.day
+                var comps = DateComponents()
+                comps.hour = hour
+                comps.minute = minute
+                if dayOffset > 0 {
+                    if let future = Calendar.current.date(byAdding: .day, value: dayOffset, to: Date()) {
+                        let futureComps = Calendar.current.dateComponents([.year, .month, .day], from: future)
+                        comps.year = futureComps.year
+                        comps.month = futureComps.month
+                        comps.day = futureComps.day
+                    }
                 }
+                let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: dayOffset == 0)
+                center.add(UNNotificationRequest(identifier: "\(id)-\(dayOffset)", content: content, trigger: trigger))
             }
 
-            let relockTrigger = UNCalendarNotificationTrigger(dateMatching: relockComps, repeats: dayOffset == 0)
-            center.add(UNNotificationRequest(
-                identifier: "midnight-relock-\(dayOffset)",
-                content: relockContent,
-                trigger: relockTrigger
-            ))
+            addSilentRelock(hour: 23, minute: 55, id: "pre-midnight-relock")
+            addSilentRelock(hour: 0, minute: 1, id: "midnight-relock")
+            addSilentRelock(hour: 4, minute: 0, id: "early-morning-relock")
 
             let lockedContent = UNMutableNotificationContent()
             lockedContent.title = "Your Apps Are Locked 🔒"

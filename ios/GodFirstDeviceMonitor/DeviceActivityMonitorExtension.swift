@@ -112,6 +112,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         applyShields()
     }
 
+    private func applyShieldsPreemptively() {
+        syncDefaults()
+        let modeActive = isGodFirstModeActive || isGodFirstModeEnrolled
+        guard modeActive || hasAppsSelected else { return }
+        forceGodFirstModeOn()
+        applyShields()
+    }
+
+    private func handleEarlyMorningEnforcement() {
+        syncDefaults()
+        let modeActive = isGodFirstModeActive || isGodFirstModeEnrolled
+        guard modeActive || hasAppsSelected else { return }
+
+        clearStaleUnlockData()
+        forceGodFirstModeOn()
+
+        if !hasCompletedToday && !wasScriptureUnlockedToday {
+            applyShields()
+        }
+    }
+
     private func enforceBlockingIfNeeded() {
         clearStaleUnlockData()
         syncDefaults()
@@ -137,12 +158,21 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     }
 
     private func isPreMidnightActivity(_ activity: DeviceActivityName) -> Bool {
-        let name = activity.rawValue
-        return name == "godFirst.preMidnightLock" || name == "godFirst.lateNightPrep"
+        activity.rawValue == "godFirst.preMidnightLock"
+    }
+
+    private func isLateNightPrepActivity(_ activity: DeviceActivityName) -> Bool {
+        activity.rawValue == "godFirst.lateNightPrep"
     }
 
     private func isMidnightActivity(_ activity: DeviceActivityName) -> Bool {
         activity.rawValue == "godFirst.midnightReblock"
+    }
+
+    private func isEarlyMorningActivity(_ activity: DeviceActivityName) -> Bool {
+        let name = activity.rawValue
+        return name == "godFirst.earlyMorningBackup" || name == "godFirst.preDawnBackup" ||
+               name == "godFirst.morningBackup" || name == "godFirst.lateMorningBackup"
     }
 
     private func isEveningActivity(_ activity: DeviceActivityName) -> Bool {
@@ -173,7 +203,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         if isPreMidnightActivity(activity) {
-            forceNewDayReset()
+            applyShieldsPreemptively()
+            return
+        }
+
+        if isLateNightPrepActivity(activity) {
+            applyShieldsPreemptively()
+            return
+        }
+
+        if isEarlyMorningActivity(activity) {
+            handleEarlyMorningEnforcement()
             return
         }
 
@@ -205,7 +245,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if isTimeLimitBackupActivity(activity) { return }
 
         if isPreMidnightActivity(activity) {
-            forceNewDayReset()
+            applyShieldsPreemptively()
             return
         }
 
