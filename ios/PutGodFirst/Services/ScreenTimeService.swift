@@ -5,13 +5,10 @@ import DeviceActivity
 
 nonisolated extension DeviceActivityName {
     static let midnightReblock = Self("godFirst.midnightReblock")
-    static let midnightReblock2 = Self("godFirst.midnightReblock2")
-    static let midnightReblock3 = Self("godFirst.midnightReblock3")
     static let earlyMorningBackup = Self("godFirst.earlyMorningBackup")
     static let preDawnBackup = Self("godFirst.preDawnBackup")
     static let morningBackup = Self("godFirst.morningBackup")
     static let lateMorningBackup = Self("godFirst.lateMorningBackup")
-    static let afternoonBackup = Self("godFirst.afternoonBackup")
     static let lateNightPrep = Self("godFirst.lateNightPrep")
     static let preMidnightLock = Self("godFirst.preMidnightLock")
     static let eveningEnforce = Self("godFirst.eveningEnforce")
@@ -19,9 +16,8 @@ nonisolated extension DeviceActivityName {
 
     static let allGodFirstActivities: [DeviceActivityName] = [
         .eveningEnforce, .nightEnforce, .lateNightPrep, .preMidnightLock,
-        .midnightReblock, .midnightReblock2, .midnightReblock3,
-        .earlyMorningBackup, .preDawnBackup,
-        .morningBackup, .lateMorningBackup, .afternoonBackup
+        .midnightReblock, .earlyMorningBackup, .preDawnBackup,
+        .morningBackup, .lateMorningBackup
     ]
 }
 
@@ -320,27 +316,24 @@ final class ScreenTimeService {
         guard godFirstModeActive || godFirstModeEnrolled || hasAppsSelected else { return }
         let center = DeviceActivityCenter()
 
-        let schedules: [(DeviceActivityName, Int, Int, Int, Int, DateComponents?)] = [
-            (.eveningEnforce,      20,  0, 20, 55, nil),
-            (.nightEnforce,        21,  0, 21, 55, nil),
-            (.lateNightPrep,       22,  0, 22, 55, nil),
-            (.preMidnightLock,     23,  0, 23, 59, DateComponents(minute: 5)),
-            (.midnightReblock,      0,  0,  0, 45, nil),
-            (.midnightReblock2,     0, 46,  1, 30, nil),
-            (.midnightReblock3,     1, 31,  1, 59, nil),
-            (.earlyMorningBackup,   2,  0,  3, 30, nil),
-            (.preDawnBackup,        4,  0,  5, 30, nil),
-            (.morningBackup,        6,  0,  7, 30, nil),
-            (.lateMorningBackup,    8,  0,  9, 30, nil),
-            (.afternoonBackup,     12,  0, 14,  0, nil),
+        let schedules: [(DeviceActivityName, Int, Int, Int, Int)] = [
+            (.eveningEnforce,      21,  0, 21, 30),
+            (.nightEnforce,        22,  0, 22, 30),
+            (.lateNightPrep,       23,  0, 23, 25),
+            (.preMidnightLock,     23, 26, 23, 58),
+            (.midnightReblock,      0,  0,  0, 30),
+            (.earlyMorningBackup,   2,  0,  2, 30),
+            (.preDawnBackup,        4,  0,  4, 30),
+            (.morningBackup,        6,  0,  6, 30),
+            (.lateMorningBackup,    8,  0,  8, 30),
         ]
 
-        for (name, startH, startM, endH, endM, warning) in schedules {
+        for (name, startH, startM, endH, endM) in schedules {
             let schedule = DeviceActivitySchedule(
                 intervalStart: DateComponents(hour: startH, minute: startM, second: 0),
                 intervalEnd: DateComponents(hour: endH, minute: endM, second: 0),
                 repeats: true,
-                warningTime: warning
+                warningTime: nil
             )
             do {
                 try center.startMonitoring(name, during: schedule)
@@ -351,19 +344,6 @@ final class ScreenTimeService {
     func stopAllMonitoring() {
         let center = DeviceActivityCenter()
         center.stopMonitoring(DeviceActivityName.allGodFirstActivities)
-    }
-
-    func forceBlockNow() {
-        guard isAuthorized else { return }
-        guard godFirstModeActive || godFirstModeEnrolled else { return }
-        forceReloadSelection()
-        clearStaleUnlockData()
-        sharedDefaults?.removeObject(forKey: "lastScriptureUnlockTimestamp")
-        sharedDefaults?.removeObject(forKey: "lastCompletedTimestamp")
-        sharedDefaults?.set(false, forKey: "manualFocusLockActive")
-        sharedDefaults?.synchronize()
-        blockApps()
-        scheduleAllMonitoring()
     }
 
     func clearStaleData() {

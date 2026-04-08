@@ -28,7 +28,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         let lastSentKey = "lastNotifTime_\(key)"
         let lastSent = sharedDefaults?.double(forKey: lastSentKey) ?? 0
         let now = Date().timeIntervalSince1970
-        if now - lastSent < 3 {
+        if now - lastSent < 10 {
             return true
         }
         sharedDefaults?.set(now, forKey: lastSentKey)
@@ -41,7 +41,7 @@ class ShieldActionExtension: ShieldActionDelegate {
 
         let content = UNMutableNotificationContent()
         content.title = "Screen Time Limit Reached \u{23F0}"
-        content.body = "Tap to open Put God First and complete a challenge."
+        content.body = "Tap this notification to open Put God First and complete a challenge."
         content.userInfo = [
             "isTimeLimitChallenge": true,
             "deepLink": "putgodfirst://time-limit-unlock"
@@ -55,12 +55,9 @@ class ShieldActionExtension: ShieldActionDelegate {
         let request = UNNotificationRequest(
             identifier: uniqueId,
             content: content,
-            trigger: nil
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
-
-        sharedDefaults?.set("time-limit-unlock", forKey: "pendingShieldDeepLink")
-        sharedDefaults?.synchronize()
     }
 
     private func sendOpenAppNotification() {
@@ -69,28 +66,22 @@ class ShieldActionExtension: ShieldActionDelegate {
             return
         }
 
-        let notifKey = hasCompletedToday ? "scriptureUnlock" : "morningSession"
-        guard !shouldThrottleNotification(key: notifKey) else { return }
-
         let content = UNMutableNotificationContent()
         let isPostSession = hasCompletedToday
-        let deepLink: String
 
         if isPostSession {
-            deepLink = "putgodfirst://scripture-unlock"
-            content.title = "Recite Scripture to Unlock \u{1F4D6}"
-            content.body = "Tap to open Put God First and recite a verse."
+            content.title = "Recite Scripture to Unlock 📖"
+            content.body = "Tap this notification to open Put God First and recite a verse."
             content.userInfo = [
                 "isPostSession": true,
-                "deepLink": deepLink
+                "deepLink": "putgodfirst://scripture-unlock"
             ]
         } else {
-            deepLink = "putgodfirst://start-session"
-            content.title = "Put God First \u{1F64F}"
-            content.body = "Tap to open Put God First and start your session."
+            content.title = "Put God First 🙏"
+            content.body = "Tap this notification to open Put God First and start your session."
             content.userInfo = [
                 "isPostSession": false,
-                "deepLink": deepLink
+                "deepLink": "putgodfirst://start-session"
             ]
         }
         content.sound = .default
@@ -98,17 +89,16 @@ class ShieldActionExtension: ShieldActionDelegate {
         content.interruptionLevel = .timeSensitive
         content.relevanceScore = 1.0
 
+        let notifKey = hasCompletedToday ? "scriptureUnlock" : "morningSession"
+        guard !shouldThrottleNotification(key: notifKey) else { return }
+
         let uniqueId = "godFirst.openApp.\(Int(Date().timeIntervalSince1970))"
         let request = UNNotificationRequest(
             identifier: uniqueId,
             content: content,
-            trigger: nil
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         )
         UNUserNotificationCenter.current().add(request)
-
-        let linkKey = isPostSession ? "scripture-unlock" : "start-session"
-        sharedDefaults?.set(linkKey, forKey: "pendingShieldDeepLink")
-        sharedDefaults?.synchronize()
     }
 
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {

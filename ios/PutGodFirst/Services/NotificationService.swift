@@ -80,108 +80,18 @@ enum NotificationService {
         return combined
     }()
 
-    private static let lockedAppMessages: [(title: String, body: String)] = [
-        ("Your Apps Are Locked 🔒", "Good morning! Complete your session to unlock your apps and put God first today."),
-        ("Apps Locked — God First 🙏", "Start your day in His presence. Complete your session to unlock."),
-        ("Rise & Unlock 🔓", "Your apps are waiting. Spend time with God first to unlock them."),
-        ("Locked Until You're Ready ✝️", "Put God first this morning — complete your session to unlock your apps."),
-        ("New Day, Apps Locked 🔒", "A fresh start awaits. Open Put God First to begin your session."),
-        ("Morning Lock Active 🛡️", "Your apps are locked until you complete today's session. Start now!"),
-        ("God First, Then Apps 📱", "Your distracting apps are locked. Take a few minutes with God to unlock."),
-    ]
-
     static func scheduleMidnightRelockNotifications() {
         let center = UNUserNotificationCenter.current()
-
-        var idsToRemove: [String] = []
-        for i in 0..<14 {
-            idsToRemove.append("midnight-relock-\(i)")
-            idsToRemove.append("morning-locked-\(i)")
-            idsToRemove.append("early-morning-locked-\(i)")
-        }
-        center.removePendingNotificationRequests(withIdentifiers: idsToRemove)
-
-        let shared = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
-        shared?.synchronize()
-        let godFirstActive = shared?.bool(forKey: "godFirstModeActive") == true
-        let godFirstEnrolled = shared?.bool(forKey: "godFirstModeEnrolled") == true
-        guard godFirstActive || godFirstEnrolled else { return }
-
-        let dayOffset = Calendar.current.component(.dayOfYear, from: .now)
-
-        for dayAhead in 0..<14 {
-            guard let futureDate = Calendar.current.date(byAdding: .day, value: dayAhead, to: .now) else { continue }
-
-            let relockContent = UNMutableNotificationContent()
-            relockContent.title = "Put God First 🙏"
-            relockContent.body = "Your apps are now locked for the new day. Start your morning with God."
-            relockContent.sound = nil
-            relockContent.interruptionLevel = .passive
-            relockContent.userInfo = ["relockTrigger": true, "silent": true]
-
-            var relockComps = Calendar.current.dateComponents([.year, .month, .day], from: futureDate)
-            relockComps.hour = 0
-            relockComps.minute = 1
-            let relockTrigger = UNCalendarNotificationTrigger(dateMatching: relockComps, repeats: false)
-            center.add(UNNotificationRequest(
-                identifier: "midnight-relock-\(dayAhead)",
-                content: relockContent,
-                trigger: relockTrigger
-            ))
-
-            let earlyIndex = (dayOffset + dayAhead) % lockedAppMessages.count
-            let earlyMsg = lockedAppMessages[earlyIndex]
-            let earlyContent = UNMutableNotificationContent()
-            earlyContent.title = earlyMsg.title
-            earlyContent.body = earlyMsg.body
-            earlyContent.sound = .default
-            earlyContent.interruptionLevel = .timeSensitive
-            earlyContent.categoryIdentifier = "OPEN_APP"
-            earlyContent.userInfo = ["deepLink": "putgodfirst://start-session", "relockTrigger": true]
-
-            var earlyComps = Calendar.current.dateComponents([.year, .month, .day], from: futureDate)
-            earlyComps.hour = 6
-            earlyComps.minute = 30
-            let earlyTrigger = UNCalendarNotificationTrigger(dateMatching: earlyComps, repeats: false)
-            center.add(UNNotificationRequest(
-                identifier: "early-morning-locked-\(dayAhead)",
-                content: earlyContent,
-                trigger: earlyTrigger
-            ))
-
-            let lockedIndex = (dayOffset + dayAhead + 3) % lockedAppMessages.count
-            let lockedMsg = lockedAppMessages[lockedIndex]
-            let lockedContent = UNMutableNotificationContent()
-            lockedContent.title = lockedMsg.title
-            lockedContent.body = lockedMsg.body
-            lockedContent.sound = .default
-            lockedContent.interruptionLevel = .timeSensitive
-            lockedContent.categoryIdentifier = "OPEN_APP"
-            lockedContent.userInfo = ["deepLink": "putgodfirst://start-session", "relockTrigger": true]
-
-            let reminderTime = savedReminderTime
-            let timeComps = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-            var lockedComps = Calendar.current.dateComponents([.year, .month, .day], from: futureDate)
-            lockedComps.hour = timeComps.hour
-            lockedComps.minute = timeComps.minute
-            let lockedTrigger = UNCalendarNotificationTrigger(dateMatching: lockedComps, repeats: false)
-            center.add(UNNotificationRequest(
-                identifier: "morning-locked-\(dayAhead)",
-                content: lockedContent,
-                trigger: lockedTrigger
-            ))
-        }
+        center.removePendingNotificationRequests(withIdentifiers: [
+            "relock-midnight", "relock-3am", "relock-5am"
+        ])
     }
 
     static func cancelRelockNotifications() {
         let center = UNUserNotificationCenter.current()
-        var idsToRemove: [String] = []
-        for i in 0..<14 {
-            idsToRemove.append("midnight-relock-\(i)")
-            idsToRemove.append("morning-locked-\(i)")
-            idsToRemove.append("early-morning-locked-\(i)")
-        }
-        center.removePendingNotificationRequests(withIdentifiers: idsToRemove)
+        center.removePendingNotificationRequests(withIdentifiers: [
+            "relock-midnight", "relock-3am", "relock-5am"
+        ])
     }
 
     static func scheduleAllNotifications() {

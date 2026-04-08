@@ -74,7 +74,6 @@ struct ContentView: View {
             )
         }
         .onAppear {
-            DeepLinkManager.shared.checkSharedDefaultsForPendingLink()
             handlePendingDeepLink()
             ensureInitialLocking()
         }
@@ -118,15 +117,12 @@ struct ContentView: View {
 
         let stl = ScreenTimeLimitService.shared
         stl.checkAndEnforceFromForeground()
-        stl.ensureMonitoringActive()
         if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
             stl.lockTimeLimitedApps()
             if DeepLinkManager.shared.pendingAction == nil {
                 DeepLinkManager.shared.pendingAction = .timeLimitUnlock
             }
         }
-
-        DeepLinkManager.shared.checkSharedDefaultsForPendingLink()
     }
 
     private func ensureInitialLocking() {
