@@ -120,12 +120,7 @@ final class ScreenTimeLimitService {
         guard hasTimeLimitAppsSelected else { return }
 
         stopMonitoring()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
-            saveTimeLimitSelection()
-            sharedDefaults?.synchronize()
-            startMonitoringFresh()
-        }
+        startMonitoringFresh()
     }
 
     func ensureMonitoringActive() {
@@ -155,7 +150,6 @@ final class ScreenTimeLimitService {
         sharedDefaults?.synchronize()
 
         let center = DeviceActivityCenter()
-        center.stopMonitoring([.screenTimeLimit])
 
         let warningMinutes = max(1, dailyLimitMinutes - 1)
 
@@ -163,7 +157,7 @@ final class ScreenTimeLimitService {
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: DateComponents(minute: 5)
+            warningTime: nil
         )
 
         let event = DeviceActivityEvent(
@@ -194,9 +188,40 @@ final class ScreenTimeLimitService {
             isMonitoringActive = true
             sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
             sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "screenTimeLimitMonitoringStarted")
+            sharedDefaults?.removeObject(forKey: "screenTimeLimitMonitoringError")
             sharedDefaults?.synchronize()
+
+            let verified = center.activities.contains(.screenTimeLimit)
+            if !verified {
+                sharedDefaults?.set("startMonitoring succeeded but not in activities list", forKey: "screenTimeLimitMonitoringError")
+                sharedDefaults?.synchronize()
+                retryStartMonitoring(center: center, schedule: schedule, events: [.timeLimitReached: event, warningEventName: warningEvent])
+            }
         } catch {
             isMonitoringActive = false
+            sharedDefaults?.set(error.localizedDescription, forKey: "screenTimeLimitMonitoringError")
+            sharedDefaults?.set(false, forKey: "screenTimeLimitMonitoringActive")
+            sharedDefaults?.synchronize()
+
+            retryStartMonitoring(center: center, schedule: schedule, events: [.timeLimitReached: event, warningEventName: warningEvent])
+        }
+    }
+
+    private func retryStartMonitoring(center: DeviceActivityCenter, schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent]) {
+        center.stopMonitoring([.screenTimeLimit])
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+            do {
+                try center.startMonitoring(.screenTimeLimit, during: schedule, events: events)
+                isMonitoringActive = true
+                sharedDefaults?.set(true, forKey: "screenTimeLimitMonitoringActive")
+                sharedDefaults?.set("retry succeeded", forKey: "screenTimeLimitMonitoringRetry")
+                sharedDefaults?.synchronize()
+            } catch {
+                isMonitoringActive = false
+                sharedDefaults?.set("retry failed: \(error.localizedDescription)", forKey: "screenTimeLimitMonitoringRetry")
+                sharedDefaults?.synchronize()
+            }
         }
     }
 
@@ -272,13 +297,11 @@ final class ScreenTimeLimitService {
 
         if isTimeLimitLocked && !wasTimeLimitUnlockedToday() {
             reapplyShields()
-            return
         }
 
         let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") ?? false
         if locked && isTimeLimitLockFromToday() && !wasTimeLimitUnlockedToday() {
             reapplyShields()
-            return
         }
 
         ensureMonitoringActive()

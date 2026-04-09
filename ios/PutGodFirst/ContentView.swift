@@ -117,11 +117,16 @@ struct ContentView: View {
 
         let stl = ScreenTimeLimitService.shared
         stl.checkAndEnforceFromForeground()
+
         if stl.isEnabled && stl.isTimeLimitLocked && !stl.wasTimeLimitUnlockedToday() {
             stl.lockTimeLimitedApps()
             if DeepLinkManager.shared.pendingAction == nil {
                 DeepLinkManager.shared.pendingAction = .timeLimitUnlock
             }
+        }
+
+        if stl.isEnabled && stl.hasTimeLimitAppsSelected && st.isAuthorized {
+            stl.ensureMonitoringActive()
         }
     }
 
