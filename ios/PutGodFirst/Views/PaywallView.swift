@@ -255,10 +255,11 @@ struct PaywallView: View {
     private var sideBySidePlanCards: some View {
         HStack(spacing: 12) {
             if let weekly = weeklyPackage {
-                planCard(
+                pricingCard(
                     title: "Weekly",
-                    priceMain: weekly.storeProduct.localizedPriceString,
-                    priceSub: "per week",
+                    totalPrice: weekly.storeProduct.localizedPriceString,
+                    totalPeriod: "/week",
+                    perWeekNote: nil,
                     badgeText: nil,
                     isSelected: selectedPackageID == weekly.identifier
                 ) {
@@ -267,11 +268,12 @@ struct PaywallView: View {
             }
 
             if let annual = annualPackage {
-                planCard(
-                    title: "Yearly",
-                    priceMain: annualPerWeekString,
-                    priceSub: "per week",
-                    badgeText: "BEST DEAL",
+                pricingCard(
+                    title: "Annual",
+                    totalPrice: annual.storeProduct.localizedPriceString,
+                    totalPeriod: "/year",
+                    perWeekNote: "Just \(annualPerWeekString)/wk",
+                    badgeText: "MOST POPULAR",
                     isSelected: selectedPackageID == annual.identifier
                 ) {
                     withAnimation(.spring(response: 0.3)) { selectedPackageID = annual.identifier }
@@ -280,9 +282,9 @@ struct PaywallView: View {
         }
     }
 
-    private func planCard(title: String, priceMain: String, priceSub: String, badgeText: String?, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func pricingCard(title: String, totalPrice: String, totalPeriod: String, perWeekNote: String?, badgeText: String?, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 if let badge = badgeText {
                     Text(badge)
                         .font(.system(size: 9, weight: .black))
@@ -300,18 +302,32 @@ struct PaywallView: View {
                 }
 
                 Text(title)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 13, weight: .bold))
                     .textCase(.uppercase)
                     .tracking(0.5)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.white.opacity(0.6))
 
-                Text(priceMain)
-                    .font(.system(size: 24, weight: .black))
-                    .foregroundStyle(.white)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(totalPrice)
+                        .font(.system(size: 28, weight: .black))
+                        .foregroundStyle(.white)
+                    Text(totalPeriod)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
 
-                Text(priceSub)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.45))
+                if let note = perWeekNote {
+                    Text(note)
+                        .font(.system(size: 13, weight: .heavy))
+                        .foregroundStyle(Theme.dawnGold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().fill(Theme.dawnGold.opacity(0.12))
+                        )
+                } else {
+                    Spacer().frame(height: 22)
+                }
 
                 if isSelected {
                     HStack(spacing: 4) {
@@ -336,7 +352,7 @@ struct PaywallView: View {
                     .foregroundStyle(isSelected ? Theme.logoIndigo : .white.opacity(0.2))
             }
             .padding(.vertical, 16)
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 10)
             .frame(maxWidth: .infinity)
             .background(
                 ZStack {
