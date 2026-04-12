@@ -3,8 +3,6 @@ import ManagedSettingsUI
 import UIKit
 
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
-    private let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
-
     override func configuration(shielding application: Application) -> ShieldConfiguration {
         return buildConfiguration(appName: application.localizedDisplayName)
     }
