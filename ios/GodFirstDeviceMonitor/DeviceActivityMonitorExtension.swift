@@ -227,10 +227,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.eventDidReachThreshold(event, activity: activity)
         syncDefaults()
 
-        if isScreenTimeLimitActivity(activity) {
-            sharedDefaults?.set("eventDidReachThreshold fired: \(event.rawValue) at \(Date())", forKey: "screenTimeLimitLastEvent")
-            sharedDefaults?.synchronize()
-
+        if activity.rawValue == "godFirst.screenTimeLimit" {
             guard !wasTimeLimitUnlockedToday else { return }
             applyTimeLimitShields()
         }
@@ -240,10 +237,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.eventWillReachThresholdWarning(event, activity: activity)
         syncDefaults()
 
-        if isScreenTimeLimitActivity(activity) {
-            sharedDefaults?.set("eventWillReachThresholdWarning fired: \(event.rawValue) at \(Date())", forKey: "screenTimeLimitLastWarningEvent")
-            sharedDefaults?.synchronize()
-
+        if activity.rawValue == "godFirst.screenTimeLimit" {
             guard !wasTimeLimitUnlockedToday else { return }
             applyTimeLimitShields()
         }
@@ -256,9 +250,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
         guard isEnabled else { return }
 
-        sharedDefaults?.set("intervalDidStart at \(Date())", forKey: "screenTimeLimitIntervalEvent")
-        sharedDefaults?.synchronize()
-
         clearTimeLimitDataForNewDay()
 
         let alreadyLocked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
@@ -267,9 +258,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 let d = Date(timeIntervalSince1970: ts)
                 if Calendar.current.isDateInToday(d) && !wasTimeLimitUnlockedToday {
                     applyTimeLimitShields()
+                    return
                 }
             }
         }
+
+        restartTimeLimitMonitoringForNewDay()
     }
 
     private var wasTimeLimitUnlockedToday: Bool {
@@ -298,20 +292,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     private func applyTimeLimitShields() {
         syncDefaults()
-        guard let selection = loadTimeLimitSelection() else {
-            sharedDefaults?.set("applyTimeLimitShields: no selection found", forKey: "screenTimeLimitShieldError")
-            sharedDefaults?.synchronize()
-            return
-        }
+        guard let selection = loadTimeLimitSelection() else { return }
         let apps = selection.applicationTokens
         let categories = selection.categoryTokens
         let webDomains = selection.webDomainTokens
 
-        guard !apps.isEmpty || !categories.isEmpty else {
-            sharedDefaults?.set("applyTimeLimitShields: empty tokens", forKey: "screenTimeLimitShieldError")
-            sharedDefaults?.synchronize()
-            return
-        }
+        guard !apps.isEmpty || !categories.isEmpty else { return }
 
         let alreadyLocked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
 
@@ -322,7 +308,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         sharedDefaults?.set(true, forKey: "isTimeLimitLocked")
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "timeLimitLockTimestamp")
         sharedDefaults?.set(true, forKey: "isTimeLimitBlocking")
-        sharedDefaults?.set("shields applied at \(Date())", forKey: "screenTimeLimitShieldStatus")
         sharedDefaults?.synchronize()
 
         if !alreadyLocked {
@@ -345,6 +330,56 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 timeLimitStore.shield.webDomains = nil
             }
         }
+    }
+
+    private func restartTimeLimitMonitoringForNewDay() {
+        syncDefaults()
+        let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+        guard isEnabled else { return }
+
+        guard let selection = loadTimeLimitSelection() else { return }
+        guard !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else { return }
+
+        let minutes = sharedDefaults?.integer(forKey: "screenTimeLimitMinutes") ?? 30
+        guard minutes > 0 else { return }
+
+        let center = DeviceActivityCenter()
+        let activityName = DeviceActivityName("godFirst.screenTimeLimit")
+        center.stopMonitoring([activityName])
+
+        let warningMinutes = max(1, minutes - 1)
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
+            repeats: true,
+            warningTime: DateComponents(minute: 5)
+        )
+
+        let eventName = DeviceActivityEvent.Name("godFirst.timeLimitReached")
+        let event = DeviceActivityEvent(
+            applications: selection.applicationTokens,
+            categories: selection.categoryTokens,
+            webDomains: selection.webDomainTokens,
+            threshold: DateComponents(minute: minutes)
+        )
+
+        let warningEventName = DeviceActivityEvent.Name("godFirst.timeLimitWarning")
+        let warningEvent = DeviceActivityEvent(
+            applications: selection.applicationTokens,
+            categories: selection.categoryTokens,
+            webDomains: selection.webDomainTokens,
+            threshold: DateComponents(minute: warningMinutes)
+        )
+
+        try? center.startMonitoring(
+            activityName,
+            during: schedule,
+            events: [
+                eventName: event,
+                warningEventName: warningEvent
+            ]
+        )
     }
 
     private func shouldThrottleNotification(key: String) -> Bool {
@@ -376,7 +411,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         ]
 
         let request = UNNotificationRequest(
-            identifier: "godFirst.timeLimit.locked.\(Int(Date().timeIntervalSince1970))",
+            identifier: "godFirst.timeLimit.locked",
             content: content,
             trigger: nil
         )
