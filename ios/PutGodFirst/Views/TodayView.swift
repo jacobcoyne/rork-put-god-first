@@ -23,6 +23,7 @@ struct TodayView: View {
     @State private var lockRotation: Double = 0
     @State private var lockScale: Double = 1.0
     @State private var showAppBlockingFromGodFirst: Bool = false
+    @State private var morningLockMessage: MorningLockMessage = MorningLockMessage.allMessages[0]
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
@@ -173,6 +174,7 @@ struct TodayView: View {
             withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true)) { glowPhase = true }
             withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: false)) { shimmerPhase = 2.0 }
             withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) { shieldGlow = true }
+            morningLockMessage = MorningLockMessage.allMessages.randomElement() ?? MorningLockMessage.allMessages[0]
             godFirstModeToggle = ScreenTimeService.shared.godFirstModeActive
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 handlePendingActions()
@@ -503,168 +505,17 @@ struct TodayView: View {
     private var lockStatusPill: some View {
         Group {
             if isAppsLocked && !viewModel.hasCompletedToday {
-                VStack(spacing: 6) {
-                    HStack(spacing: 8) {
-                        Circle().fill(Color(red: 0.85, green: 0.25, blue: 0.30)).frame(width: 6, height: 6)
-                        Text("Apps locked \u{2014} tap \(Image(systemName: "lock.fill")) to unlock")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    VStack(spacing: 4) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "sunrise.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(Color(red: 0.85, green: 0.25, blue: 0.30).opacity(0.8))
-                            Text("Complete today\u{2019}s session to unlock your apps")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                        HStack(spacing: 6) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(Theme.icePurple.opacity(0.8))
-                            Text("Or tap the \(Image(systemName: "lock.fill")) icon to recite scripture")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(isDark ? Theme.cardBg : Color(red: 0.99, green: 0.97, blue: 0.96))
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.18 : 0.14),
-                                        Color(red: 0.75, green: 0.18, blue: 0.35).opacity(isDark ? 0.12 : 0.10),
-                                        Color(red: 0.60, green: 0.15, blue: 0.40).opacity(isDark ? 0.10 : 0.07),
-                                        Color(red: 0.90, green: 0.30, blue: 0.25).opacity(isDark ? 0.12 : 0.08)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.14 : 0.12),
-                                        Color(red: 0.70, green: 0.18, blue: 0.40).opacity(isDark ? 0.06 : 0.05),
-                                        .clear
-                                    ],
-                                    center: .bottomLeading,
-                                    startRadius: 10,
-                                    endRadius: 180
-                                )
-                            )
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color(red: 0.60, green: 0.15, blue: 0.40).opacity(isDark ? 0.10 : 0.07),
-                                        .clear
-                                    ],
-                                    center: .topTrailing,
-                                    startRadius: 10,
-                                    endRadius: 140
-                                )
-                            )
-                        RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.25, blue: 0.30).opacity(isDark ? 0.35 : 0.25),
-                                        Color(red: 0.70, green: 0.20, blue: 0.40).opacity(isDark ? 0.20 : 0.15),
-                                        Color(red: 0.85, green: 0.30, blue: 0.35).opacity(isDark ? 0.25 : 0.18)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.8
-                            )
-                    }
-                    .shadow(color: Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.12 : 0.08), radius: 16, y: 5)
-                )
-                .transition(.asymmetric(
-                    insertion: .move(edge: .top).combined(with: .opacity),
-                    removal: .move(edge: .top).combined(with: .opacity)
-                ))
+                morningLockedCard
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
             } else if isAppsLocked {
-                VStack(spacing: 6) {
-                    HStack(spacing: 8) {
-                        Circle().fill(Color(red: 0.85, green: 0.25, blue: 0.30)).frame(width: 6, height: 6)
-                        Text("Apps locked \u{2014} tap \(Image(systemName: "lock.fill")) to unlock")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    HStack(spacing: 6) {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Theme.icePurple.opacity(0.8))
-                        Text("Recite a scripture verse to unlock your apps")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(isDark ? Theme.cardBg : Color(red: 0.99, green: 0.97, blue: 0.96))
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.18 : 0.14),
-                                        Color(red: 0.75, green: 0.18, blue: 0.35).opacity(isDark ? 0.12 : 0.10),
-                                        Color(red: 0.60, green: 0.15, blue: 0.40).opacity(isDark ? 0.10 : 0.07),
-                                        Color(red: 0.90, green: 0.30, blue: 0.25).opacity(isDark ? 0.12 : 0.08)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.14 : 0.12),
-                                        Color(red: 0.70, green: 0.18, blue: 0.40).opacity(isDark ? 0.06 : 0.05),
-                                        .clear
-                                    ],
-                                    center: .bottomLeading,
-                                    startRadius: 10,
-                                    endRadius: 180
-                                )
-                            )
-                        RoundedRectangle(cornerRadius: 20)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.85, green: 0.25, blue: 0.30).opacity(isDark ? 0.35 : 0.25),
-                                        Color(red: 0.70, green: 0.20, blue: 0.40).opacity(isDark ? 0.20 : 0.15)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.8
-                            )
-                    }
-                    .shadow(color: Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.12 : 0.08), radius: 16, y: 5)
-                )
-                .transition(.asymmetric(
-                    insertion: .move(edge: .top).combined(with: .opacity),
-                    removal: .move(edge: .top).combined(with: .opacity)
-                ))
+                postSessionLockedCard
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
             } else if viewModel.hasCompletedToday || godFirstModeToggle {
                 HStack(spacing: 8) {
                     Circle().fill(Theme.successEmerald).frame(width: 6, height: 6)
@@ -683,6 +534,170 @@ struct TodayView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isAppsLocked)
+    }
+
+    private var morningLockedCard: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Text(morningLockMessage.emoji)
+                    .font(.system(size: 28))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(morningLockMessage.title)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(morningLockMessage.subtitle)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Circle()
+                    .fill(Color(red: 0.85, green: 0.25, blue: 0.30).opacity(0.15))
+                    .frame(width: 8, height: 8)
+                    .overlay(
+                        Circle()
+                            .fill(Color(red: 0.85, green: 0.25, blue: 0.30))
+                            .frame(width: 6, height: 6)
+                    )
+            }
+
+            Rectangle()
+                .fill(isDark ? .white.opacity(0.06) : .black.opacity(0.04))
+                .frame(height: 1)
+
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Text("\u{2728}")
+                        .font(.system(size: 13))
+                    Text("Start your morning session to unlock")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { showDevotional = true }
+
+                HStack(spacing: 8) {
+                    Text("\u{1F399}\u{FE0F}")
+                        .font(.system(size: 13))
+                    Text("Or recite scripture to unlock now")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Theme.textSecondary.opacity(0.5))
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { showScriptureUnlock = true }
+            }
+
+            Text(morningLockMessage.quip)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textSecondary.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isDark ? Theme.cardBg : Color(red: 0.99, green: 0.97, blue: 0.96))
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.16 : 0.12),
+                                Color(red: 0.75, green: 0.18, blue: 0.35).opacity(isDark ? 0.10 : 0.08),
+                                Color(red: 0.60, green: 0.15, blue: 0.40).opacity(isDark ? 0.08 : 0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.85, green: 0.25, blue: 0.30).opacity(isDark ? 0.30 : 0.20),
+                                Color(red: 0.70, green: 0.20, blue: 0.40).opacity(isDark ? 0.18 : 0.12)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.8
+                    )
+            }
+            .shadow(color: Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.10 : 0.06), radius: 14, y: 4)
+        )
+    }
+
+    private var postSessionLockedCard: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Text("\u{1F512}")
+                    .font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Apps Still Locked")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("Recite a verse to unlock \u{1F4AA}")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Theme.icePurple.opacity(0.5))
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { showScriptureUnlock = true }
+
+            HStack(spacing: 6) {
+                Text("\u{1F4A1}")
+                    .font(.system(size: 11))
+                Text("You got this \u{2014} one verse and you\u{2019}re free!")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary.opacity(0.6))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(16)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isDark ? Theme.cardBg : Color(red: 0.99, green: 0.97, blue: 0.96))
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.14 : 0.10),
+                                Color(red: 0.60, green: 0.15, blue: 0.40).opacity(isDark ? 0.08 : 0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.85, green: 0.25, blue: 0.30).opacity(isDark ? 0.28 : 0.18),
+                                Color(red: 0.70, green: 0.20, blue: 0.40).opacity(isDark ? 0.15 : 0.10)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.8
+                    )
+            }
+            .shadow(color: Color(red: 0.85, green: 0.22, blue: 0.28).opacity(isDark ? 0.10 : 0.06), radius: 14, y: 4)
+        )
     }
 
     // MARK: - Daily Content (Full Width Mesh Gradient)
@@ -1759,6 +1774,76 @@ struct ShareableVerseCard: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
+}
+
+private struct MorningLockMessage {
+    let emoji: String
+    let title: String
+    let subtitle: String
+    let quip: String
+
+    static let allMessages: [MorningLockMessage] = [
+        MorningLockMessage(
+            emoji: "\u{1F31E}",
+            title: "Rise & Pray First",
+            subtitle: "Your apps are paused until you spend time with God",
+            quip: "The feed can wait. Your soul can\u{2019}t. \u{1F54A}\u{FE0F}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{2615}",
+            title: "God Before the Gram",
+            subtitle: "Apps locked until your morning session is done",
+            quip: "Coffee + Jesus > Coffee + Doomscrolling \u{2615}\u{2728}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F6A7}",
+            title: "Hold Up!",
+            subtitle: "Complete your session to unlock apps for the day",
+            quip: "Your past self set this up because they believe in you \u{1F4AA}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F64F}",
+            title: "Pray First, Scroll Later",
+            subtitle: "Your morning with God comes before everything else",
+            quip: "TikTok isn\u{2019}t going anywhere. But your peace is waiting. \u{1F338}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{26F0}\u{FE0F}",
+            title: "Seek Him First",
+            subtitle: "Apps unlock after you put God first today",
+            quip: "\u{201C}Seek first the kingdom of God\u{201D} \u{2014} Matthew 6:33 \u{1F451}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F525}",
+            title: "Morning Armor Up",
+            subtitle: "Start your day in the Word before the world",
+            quip: "You\u{2019}re literally choosing God over TikTok rn. Legend. \u{1F3C6}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F305}",
+            title: "New Mercies Await",
+            subtitle: "Your apps are on hold \u{2014} God\u{2019}s Word isn\u{2019}t",
+            quip: "His mercies are new every morning. Your memes can wait. \u{1F609}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F4F5}",
+            title: "Phone Down,\nPrayer Up",
+            subtitle: "Spend time with God to unlock your day",
+            quip: "5 minutes with God > 5 hours of scrolling. No cap. \u{1F9E2}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F6E1}\u{FE0F}",
+            title: "Shield Mode: AM",
+            subtitle: "Your morning shield is active until you\u{2019}re ready",
+            quip: "You chose this. Your future self is so proud rn. \u{1F979}"
+        ),
+        MorningLockMessage(
+            emoji: "\u{1F3AF}",
+            title: "First Things First",
+            subtitle: "God first, then everything else follows",
+            quip: "The algorithm can\u{2019}t compete with the Almighty \u{1F4AF}"
+        ),
+    ]
 }
 
 struct ShareSheet: UIViewControllerRepresentable {
