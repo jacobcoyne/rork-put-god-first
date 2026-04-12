@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		AA10010C2EAEAD3200EA8BCF /* GodFirstShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA1001012EAEAD3200EA8BCF /* GodFirstShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA20010C2EAEAD3200EA8BCF /* GodFirstShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA2001012EAEAD3200EA8BCF /* GodFirstShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		AA30010C2EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA3001012EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,13 +40,6 @@
 			remoteGlobalIDString = AA2001062EAEAD3200EA8BCF;
 			remoteInfo = GodFirstShieldAction;
 		};
-		AA30010B2EAEAD3200EA8BCF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AA3001062EAEAD3200EA8BCF;
-			remoteInfo = GodFirstDeviceMonitor;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -59,7 +51,6 @@
 			files = (
 				AA10010C2EAEAD3200EA8BCF /* GodFirstShieldConfig.appex in Embed Foundation Extensions */,
 				AA20010C2EAEAD3200EA8BCF /* GodFirstShieldAction.appex in Embed Foundation Extensions */,
-				AA30010C2EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,7 +63,6 @@
 		105FC5932E9EAD3200EA8BCF /* PutGodFirstUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PutGodFirstUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA1001012EAEAD3200EA8BCF /* GodFirstShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GodFirstShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA2001012EAEAD3200EA8BCF /* GodFirstShieldAction.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GodFirstShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA3001012EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GodFirstDeviceMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 
 /* End PBXFileReference section */
 
@@ -102,11 +92,6 @@
 		AA2001022EAEAD3200EA8BCF /* GodFirstShieldAction */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = GodFirstShieldAction;
-			sourceTree = "<group>";
-		};
-		AA3001022EAEAD3200EA8BCF /* GodFirstDeviceMonitor */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GodFirstDeviceMonitor;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -147,13 +132,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AA3001032EAEAD3200EA8BCF /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 
 /* End PBXFrameworksBuildPhase section */
 
@@ -164,7 +142,6 @@
 				105FC57C2E9EAD3100EA8BCF /* PutGodFirst */,
 				AA1001022EAEAD3200EA8BCF /* GodFirstShieldConfig */,
 				AA2001022EAEAD3200EA8BCF /* GodFirstShieldAction */,
-				AA3001022EAEAD3200EA8BCF /* GodFirstDeviceMonitor */,
 				105FC58C2E9EAD3200EA8BCF /* PutGodFirstTests */,
 				105FC5962E9EAD3200EA8BCF /* PutGodFirstUITests */,
 				105FC57B2E9EAD3100EA8BCF /* Products */,
@@ -179,7 +156,6 @@
 				105FC5932E9EAD3200EA8BCF /* PutGodFirstUITests.xctest */,
 				AA1001012EAEAD3200EA8BCF /* GodFirstShieldConfig.appex */,
 				AA2001012EAEAD3200EA8BCF /* GodFirstShieldAction.appex */,
-				AA3001012EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -201,7 +177,6 @@
 			dependencies = (
 				AA10010A2EAEAD3200EA8BCF /* PBXTargetDependency */,
 				AA20010A2EAEAD3200EA8BCF /* PBXTargetDependency */,
-				AA30010A2EAEAD3200EA8BCF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				105FC57C2E9EAD3100EA8BCF /* PutGodFirst */,
@@ -305,28 +280,6 @@
 			productReference = AA2001012EAEAD3200EA8BCF /* GodFirstShieldAction.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		AA3001062EAEAD3200EA8BCF /* GodFirstDeviceMonitor */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AA3001092EAEAD3200EA8BCF /* Build configuration list for PBXNativeTarget "GodFirstDeviceMonitor" */;
-			buildPhases = (
-				AA3001052EAEAD3200EA8BCF /* Sources */,
-				AA3001032EAEAD3200EA8BCF /* Frameworks */,
-				AA3001042EAEAD3200EA8BCF /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				AA3001022EAEAD3200EA8BCF /* GodFirstDeviceMonitor */,
-			);
-			name = GodFirstDeviceMonitor;
-			packageProductDependencies = (
-			);
-			productName = GodFirstDeviceMonitor;
-			productReference = AA3001012EAEAD3200EA8BCF /* GodFirstDeviceMonitor.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -354,9 +307,6 @@
 					AA2001062EAEAD3200EA8BCF = {
 						CreatedOnToolsVersion = 26.0;
 					};
-					AA3001062EAEAD3200EA8BCF = {
-						CreatedOnToolsVersion = 26.0;
-					};
 				};
 			};
 			buildConfigurationList = 105FC5752E9EAD3100EA8BCF /* Build configuration list for PBXProject "PutGodFirst" */;
@@ -382,7 +332,6 @@
 				105FC5922E9EAD3200EA8BCF /* PutGodFirst */,
 				AA1001062EAEAD3200EA8BCF /* GodFirstShieldConfig */,
 				AA2001062EAEAD3200EA8BCF /* GodFirstShieldAction */,
-				AA3001062EAEAD3200EA8BCF /* GodFirstDeviceMonitor */,
 			);
 		};
 /* End PBXProject section */
@@ -417,13 +366,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AA2001042EAEAD3200EA8BCF /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA3001042EAEAD3200EA8BCF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -469,13 +411,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AA3001052EAEAD3200EA8BCF /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 
 /* End PBXSourcesBuildPhase section */
 
@@ -499,11 +434,6 @@
 			isa = PBXTargetDependency;
 			target = AA2001062EAEAD3200EA8BCF /* GodFirstShieldAction */;
 			targetProxy = AA20010B2EAEAD3200EA8BCF /* PBXContainerItemProxy */;
-		};
-		AA30010A2EAEAD3200EA8BCF /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AA3001062EAEAD3200EA8BCF /* GodFirstDeviceMonitor */;
-			targetProxy = AA30010B2EAEAD3200EA8BCF /* PBXContainerItemProxy */;
 		};
 
 /* End PBXTargetDependency section */
@@ -666,7 +596,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -713,7 +643,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -737,7 +667,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -759,7 +689,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -779,7 +709,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -799,7 +729,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -827,7 +757,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldConfig";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -853,7 +783,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldConfig";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -879,7 +809,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldAction";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -905,60 +835,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstShieldAction";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		AA3001072EAEAD3200EA8BCF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstDeviceMonitor.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SupportingFiles/Extensions/GodFirstDeviceMonitor-Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstDeviceMonitor";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		AA3001082EAEAD3200EA8BCF /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstDeviceMonitor.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SupportingFiles/Extensions/GodFirstDeviceMonitor-Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.rork.god-first-app-c1nigyo.GodFirstDeviceMonitor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1022,15 +900,6 @@
 			buildConfigurations = (
 				AA2001072EAEAD3200EA8BCF /* Debug */,
 				AA2001082EAEAD3200EA8BCF /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		AA3001092EAEAD3200EA8BCF /* Build configuration list for PBXNativeTarget "GodFirstDeviceMonitor" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AA3001072EAEAD3200EA8BCF /* Debug */,
-				AA3001082EAEAD3200EA8BCF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
