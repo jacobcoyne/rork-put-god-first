@@ -46,6 +46,40 @@ struct PaywallView: View {
         return "$1.15"
     }
 
+    private var annualPerMonthString: String {
+        if let pkg = annualPackage {
+            let price = pkg.storeProduct.price as Decimal
+            let monthly = price / 12
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = pkg.storeProduct.priceFormatter?.locale ?? .current
+            return formatter.string(from: monthly as NSDecimalNumber) ?? "$5.00"
+        }
+        return "$5.00"
+    }
+
+    private var weeklyCostPerYearString: String {
+        if let pkg = weeklyPackage {
+            let price = pkg.storeProduct.price as Decimal
+            let yearly = price * 52
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = pkg.storeProduct.priceFormatter?.locale ?? .current
+            formatter.maximumFractionDigits = 0
+            return formatter.string(from: yearly as NSDecimalNumber) ?? "$260"
+        }
+        return "$260"
+    }
+
+    private var savingsPercentage: Int {
+        guard let weekly = weeklyPackage, let annual = annualPackage else { return 75 }
+        let weeklyPerYear = weekly.storeProduct.price as Decimal * 52
+        let annualPrice = annual.storeProduct.price as Decimal
+        guard weeklyPerYear > 0 else { return 75 }
+        let savings = ((weeklyPerYear - annualPrice) / weeklyPerYear) * 100
+        return Int(truncating: savings as NSDecimalNumber)
+    }
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -253,65 +287,85 @@ struct PaywallView: View {
     }
 
     private var sideBySidePlanCards: some View {
-        HStack(spacing: 12) {
-            if let weekly = weeklyPackage {
-                planCard(
-                    title: "Weekly",
-                    priceMain: weekly.storeProduct.localizedPriceString,
-                    priceSub: "per week",
-                    badgeText: nil,
-                    isSelected: selectedPackageID == weekly.identifier
-                ) {
-                    withAnimation(.spring(response: 0.3)) { selectedPackageID = weekly.identifier }
-                }
-            }
-
+        VStack(spacing: 12) {
             if let annual = annualPackage {
-                planCard(
-                    title: "Yearly",
-                    priceMain: annualPerWeekString,
-                    priceSub: "per week",
-                    badgeText: "BEST DEAL",
+                annualPlanCard(
+                    totalPrice: annual.storeProduct.localizedPriceString,
+                    perMonth: annualPerMonthString,
                     isSelected: selectedPackageID == annual.identifier
                 ) {
                     withAnimation(.spring(response: 0.3)) { selectedPackageID = annual.identifier }
                 }
             }
+
+            if let weekly = weeklyPackage {
+                weeklyPlanCard(
+                    price: weekly.storeProduct.localizedPriceString,
+                    isSelected: selectedPackageID == weekly.identifier
+                ) {
+                    withAnimation(.spring(response: 0.3)) { selectedPackageID = weekly.identifier }
+                }
+            }
         }
     }
 
-    private func planCard(title: String, priceMain: String, priceSub: String, badgeText: String?, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func annualPlanCard(totalPrice: String, perMonth: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 10) {
-                if let badge = badgeText {
-                    Text(badge)
-                        .font(.system(size: 9, weight: .black))
-                        .tracking(0.8)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule().fill(
-                                LinearGradient(colors: [Theme.dawnGold, Theme.dawnAmber], startPoint: .leading, endPoint: .trailing)
-                            )
+            VStack(spacing: 0) {
+                HStack {
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 10))
+                        Text("MOST POPULAR")
+                            .font(.system(size: 10, weight: .black))
+                            .tracking(0.8)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule().fill(
+                            LinearGradient(colors: [Theme.dawnGold, Theme.dawnAmber], startPoint: .leading, endPoint: .trailing)
                         )
-                } else {
-                    Spacer().frame(height: 20)
+                    )
+
+                    Spacer()
+
+                    Text("SAVE \(savingsPercentage)%")
+                        .font(.system(size: 10, weight: .black))
+                        .tracking(0.5)
+                        .foregroundStyle(Theme.successEmerald)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            Capsule().fill(Theme.successEmerald.opacity(0.15))
+                        )
                 }
 
-                Text(title)
-                    .font(.system(size: 14, weight: .bold))
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-                    .foregroundStyle(.white.opacity(0.7))
+                Spacer().frame(height: 14)
 
-                Text(priceMain)
-                    .font(.system(size: 24, weight: .black))
-                    .foregroundStyle(.white)
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text(totalPrice)
+                        .font(.system(size: 32, weight: .black))
+                        .foregroundStyle(.white)
+                    Text("/year")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
 
-                Text(priceSub)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.45))
+                Spacer().frame(height: 6)
+
+                Text("That's just \(perMonth)/month")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Theme.dawnGold)
+
+                Spacer().frame(height: 4)
+
+                Text("vs \(weeklyCostPerYearString)/yr on the weekly plan")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.35))
+
+                Spacer().frame(height: 12)
 
                 if isSelected {
                     HStack(spacing: 4) {
@@ -327,36 +381,93 @@ struct PaywallView: View {
                         Capsule().fill(Theme.successEmerald.opacity(0.15))
                     )
                     .transition(.scale.combined(with: .opacity))
-                } else {
-                    Spacer().frame(height: 24)
                 }
+
+                Spacer().frame(height: 8)
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24))
                     .foregroundStyle(isSelected ? Theme.logoIndigo : .white.opacity(0.2))
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 12)
+            .padding(.vertical, 18)
+            .padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
             .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(.white.opacity(isSelected ? 0.1 : 0.04))
                     if isSelected {
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 20)
                             .strokeBorder(
-                                LinearGradient(colors: [Theme.logoBlue, Theme.logoPurple], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                LinearGradient(colors: [Theme.dawnGold, Theme.dawnAmber], startPoint: .topLeading, endPoint: .bottomTrailing),
                                 lineWidth: 2.5
                             )
                     } else {
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 20)
                             .strokeBorder(.white.opacity(0.1), lineWidth: 1)
                     }
                 }
             )
-            .shadow(color: isSelected ? Theme.logoIndigo.opacity(0.3) : .clear, radius: 16, y: 6)
+            .shadow(color: isSelected ? Theme.dawnGold.opacity(0.2) : .clear, radius: 16, y: 6)
         }
     }
+
+    private func weeklyPlanCard(price: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundStyle(isSelected ? Theme.logoIndigo : .white.opacity(0.2))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Weekly")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.white)
+                    Text("\(price)/week")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+
+                Spacer()
+
+                if isSelected {
+                    HStack(spacing: 4) {
+                        Image(systemName: "gift.fill")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("3 DAYS FREE")
+                            .font(.system(size: 10, weight: .black))
+                    }
+                    .foregroundStyle(Theme.successEmerald)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule().fill(Theme.successEmerald.opacity(0.15))
+                    )
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .padding(.vertical, 14)
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(.white.opacity(isSelected ? 0.08 : 0.04))
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(
+                                LinearGradient(colors: [Theme.logoBlue, Theme.logoPurple], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                lineWidth: 2
+                            )
+                    } else {
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(.white.opacity(0.1), lineWidth: 1)
+                    }
+                }
+            )
+        }
+    }
+
 
     private var ctaSection: some View {
         VStack(spacing: 10) {

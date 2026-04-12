@@ -126,6 +126,24 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 applyShields()
             }
         }
+
+        enforceTimeLimitIfNeeded()
+    }
+
+    private func enforceTimeLimitIfNeeded() {
+        syncDefaults()
+        let isEnabled = sharedDefaults?.bool(forKey: "screenTimeLimitEnabled") == true
+        guard isEnabled else { return }
+
+        let locked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
+        guard locked else { return }
+
+        if let ts = sharedDefaults?.double(forKey: "timeLimitLockTimestamp"), ts > 0 {
+            let d = Date(timeIntervalSince1970: ts)
+            if Calendar.current.isDateInToday(d) && !wasTimeLimitUnlockedToday {
+                applyTimeLimitShields()
+            }
+        }
     }
 
     private func isScreenTimeLimitActivity(_ activity: DeviceActivityName) -> Bool {
@@ -167,12 +185,14 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         if isScreenTimeLimitActivity(activity) {
             handleScreenTimeLimitIntervalStart()
+            ensureGodFirstBlockingOnNewDay()
             return
         }
 
         if isMidnightActivity(activity) {
             forceNewDayReset()
             clearTimeLimitDataForNewDay()
+            restartTimeLimitMonitoringForNewDay()
             return
         }
 
@@ -193,7 +213,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalDidEnd(for: activity)
         syncDefaults()
 
-        if isScreenTimeLimitActivity(activity) { return }
+        if isScreenTimeLimitActivity(activity) {
+            restartTimeLimitMonitoringForNewDay()
+            return
+        }
 
         if isMidnightActivity(activity) || isPreMidnightActivity(activity) || isEarlyMorningActivity(activity) {
             forceNewDayReset()
@@ -230,6 +253,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if activity.rawValue == "godFirst.screenTimeLimit" {
             guard !wasTimeLimitUnlockedToday else { return }
             applyTimeLimitShields()
+            sendTimeLimitNotification()
         }
     }
 
@@ -240,6 +264,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         if activity.rawValue == "godFirst.screenTimeLimit" {
             guard !wasTimeLimitUnlockedToday else { return }
             applyTimeLimitShields()
+            sendTimeLimitNotification()
         }
     }
 
@@ -264,6 +289,20 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
 
         restartTimeLimitMonitoringForNewDay()
+    }
+
+    private func ensureGodFirstBlockingOnNewDay() {
+        let enrolled = isGodFirstModeEnrolled
+        let active = isGodFirstModeActive
+        let hasApps = hasAppsSelected
+
+        guard enrolled || active || hasApps else { return }
+
+        forceGodFirstModeOn()
+
+        if !hasCompletedToday && !wasScriptureUnlockedToday {
+            applyShields()
+        }
     }
 
     private var wasTimeLimitUnlockedToday: Bool {
@@ -299,8 +338,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         guard !apps.isEmpty || !categories.isEmpty else { return }
 
-        let alreadyLocked = sharedDefaults?.bool(forKey: "isTimeLimitLocked") == true
-
         timeLimitStore.shield.applications = apps.isEmpty ? nil : apps
         timeLimitStore.shield.applicationCategories = categories.isEmpty ? nil : .specific(categories)
         timeLimitStore.shield.webDomains = webDomains.isEmpty ? nil : webDomains
@@ -309,10 +346,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "timeLimitLockTimestamp")
         sharedDefaults?.set(true, forKey: "isTimeLimitBlocking")
         sharedDefaults?.synchronize()
-
-        if !alreadyLocked {
-            sendTimeLimitNotification()
-        }
     }
 
     private func clearTimeLimitDataForNewDay() {
@@ -353,7 +386,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: DateComponents(minute: 5)
+            warningTime: DateComponents(minute: 1)
         )
 
         let eventName = DeviceActivityEvent.Name("godFirst.timeLimitReached")
@@ -382,25 +415,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         )
     }
 
-    private func shouldThrottleNotification(key: String) -> Bool {
-        syncDefaults()
-        let lastSentKey = "lastNotifTime_\(key)"
-        let lastSent = sharedDefaults?.double(forKey: lastSentKey) ?? 0
-        let now = Date().timeIntervalSince1970
-        if now - lastSent < 3600 {
-            return true
-        }
-        sharedDefaults?.set(now, forKey: lastSentKey)
-        sharedDefaults?.synchronize()
-        return false
-    }
-
     private func sendTimeLimitNotification() {
-        guard !shouldThrottleNotification(key: "timeLimitMonitor") else { return }
-
         let content = UNMutableNotificationContent()
-        content.title = "Screen Time Limit Reached"
-        content.body = "Your apps are now locked. Complete a challenge to unlock."
+        content.title = "Screen Time Limit Reached \u{23F0}"
+        content.body = "Your apps are now locked. Tap to open Put God First and complete a challenge to unlock."
         content.sound = .default
         content.categoryIdentifier = "SCREEN_TIME_LIMIT"
         content.interruptionLevel = .timeSensitive
@@ -410,10 +428,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             "isTimeLimitChallenge": true
         ]
 
+        let uniqueId = "godFirst.timeLimit.locked.\(Int(Date().timeIntervalSince1970 * 1000))"
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
         let request = UNNotificationRequest(
-            identifier: "godFirst.timeLimit.locked",
+            identifier: uniqueId,
             content: content,
-            trigger: nil
+            trigger: trigger
         )
         UNUserNotificationCenter.current().add(request)
     }

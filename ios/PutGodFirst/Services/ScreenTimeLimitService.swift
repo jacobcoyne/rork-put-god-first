@@ -121,9 +121,10 @@ final class ScreenTimeLimitService {
 
         stopMonitoring()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
-            saveTimeLimitSelection()
-            sharedDefaults?.synchronize()
+        saveTimeLimitSelection()
+        sharedDefaults?.synchronize()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [self] in
             startMonitoringFresh()
         }
     }
@@ -163,7 +164,7 @@ final class ScreenTimeLimitService {
             intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
             intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
             repeats: true,
-            warningTime: DateComponents(minute: 5)
+            warningTime: DateComponents(minute: 1)
         )
 
         let event = DeviceActivityEvent(
