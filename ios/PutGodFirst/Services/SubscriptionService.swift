@@ -94,7 +94,7 @@ final class SubscriptionService: NSObject {
     }
 }
 
-extension SubscriptionService: @preconcurrency PurchasesDelegate {
+extension SubscriptionService: PurchasesDelegate {
     nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         Task { @MainActor in
             let entitlement = customerInfo.entitlements[entitlementID]

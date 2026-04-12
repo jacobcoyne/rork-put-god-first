@@ -1,4 +1,5 @@
 import SwiftUI
+import FamilyControls
 
 struct ActivityView: View {
     @Bindable var viewModel: AppViewModel

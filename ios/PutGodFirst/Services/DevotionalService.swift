@@ -1,6 +1,6 @@
 import Foundation
 
-actor DevotionalService {
+final class DevotionalService {
     static let shared = DevotionalService()
 
     private let cacheKey = "cachedDailyContent"

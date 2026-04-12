@@ -2,7 +2,7 @@ import Foundation
 import Vision
 import UIKit
 
-nonisolated class BibleDetectionService: Sendable {
+nonisolated final class BibleDetectionService: Sendable {
     static let shared = BibleDetectionService()
 
     private static let bibleBooks: Set<String> = [

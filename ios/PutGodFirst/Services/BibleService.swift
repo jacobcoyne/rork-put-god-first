@@ -1,10 +1,10 @@
 import Foundation
 
-actor BibleService {
+final class BibleService {
     static let shared = BibleService()
 
     private let baseURL = "https://api.scripture.api.bible/v1"
-    private nonisolated var apiKey: String {
+    private var apiKey: String {
         let key = Config.EXPO_PUBLIC_API_BIBLE_KEY
         if !key.isEmpty { return key }
         return Bundle.main.object(forInfoDictionaryKey: "APIBibleKey") as? String ?? ""

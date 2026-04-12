@@ -110,26 +110,21 @@ final class SpeechRecognitionService {
 
     private func startSilenceTimer() {
         silenceTimer?.invalidate()
-        silenceTimer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self, self.isListening else { return }
-                if !self.hasReachedThreshold {
-                    self.errorMessage = "Time's up. Try reading the verse again."
-                }
+        let timer = Timer.scheduledTimer(withTimeInterval: 45.0, repeats: false) { _ in }
+        silenceTimer = timer
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(45.0))
+            guard let self, self.isListening else { return }
+            if !self.hasReachedThreshold {
+                self.errorMessage = "Time's up. Try reading the verse again."
             }
         }
     }
 
     private func resetSilenceTimer() {
         silenceTimer?.invalidate()
-        silenceTimer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self, self.isListening else { return }
-                if self.hasReachedThreshold {
-                    return
-                }
-            }
-        }
+        let timer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: false) { _ in }
+        silenceTimer = timer
     }
 
     func stopListening() {

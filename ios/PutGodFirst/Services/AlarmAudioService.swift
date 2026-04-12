@@ -486,11 +486,12 @@ final class AlarmAudioService {
             self.reverbNode = reverb
 
             if let duration {
-                stopTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
-                    Task { @MainActor in
+                let timer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
+                    Task { @MainActor [weak self] in
                         self?.stopPlayback()
                     }
                 }
+                stopTimer = timer
             }
         } catch {}
     }
