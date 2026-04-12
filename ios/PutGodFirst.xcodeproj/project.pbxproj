@@ -66,8 +66,6 @@
 
 /* End PBXFileReference section */
 
-
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		105FC57C2E9EAD3100EA8BCF /* PutGodFirst */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
