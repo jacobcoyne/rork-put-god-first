@@ -241,13 +241,10 @@ struct MainTabView: View {
                         .renderingMode(.template)
                     }
                 }
-                Tab("Activity", systemImage: "shield.lefthalf.filled", value: 3) {
-                    ActivityView(viewModel: viewModel)
-                }
-                Tab("Chat", systemImage: "bubble.left.fill", value: 4) {
+                Tab("Chat", systemImage: "bubble.left.fill", value: 3) {
                     GuideChatView()
                 }
-                Tab("Settings", systemImage: "gearshape.fill", value: 5) {
+                Tab("Settings", systemImage: "gearshape.fill", value: 4) {
                     SettingsView(viewModel: viewModel)
                 }
             }
@@ -291,7 +288,7 @@ struct MainTabView: View {
         .onChange(of: viewModel.showScreenTimeLimitOnboarding) { _, newValue in
             if newValue {
                 viewModel.showScreenTimeLimitOnboarding = false
-                selectedTab = 5
+                selectedTab = 4
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     showScreenTimeLimitSettings = true
                 }
