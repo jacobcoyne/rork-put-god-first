@@ -813,7 +813,7 @@
 		AA1001072EAEAD3200EA8BCF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstShieldConfig.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstShieldConfig/GodFirstShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -839,7 +839,7 @@
 		AA1001082EAEAD3200EA8BCF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstShieldConfig.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstShieldConfig/GodFirstShieldConfig.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -865,7 +865,7 @@
 		AA2001072EAEAD3200EA8BCF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstShieldAction.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstShieldAction/GodFirstShieldAction.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -891,7 +891,7 @@
 		AA2001082EAEAD3200EA8BCF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstShieldAction.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstShieldAction/GodFirstShieldAction.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -917,7 +917,7 @@
 		AA3001072EAEAD3200EA8BCF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstDeviceMonitor.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstDeviceMonitor/GodFirstDeviceMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -943,7 +943,7 @@
 		AA3001082EAEAD3200EA8BCF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SupportingFiles/Extensions/GodFirstDeviceMonitor.entitlements;
+				CODE_SIGN_ENTITLEMENTS = GodFirstDeviceMonitor/GodFirstDeviceMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
