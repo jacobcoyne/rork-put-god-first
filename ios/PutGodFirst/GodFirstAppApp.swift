@@ -29,7 +29,7 @@ struct GodFirstAppApp: App {
             DeepLinkManager.shared.pendingAction = .scriptureUnlock
         case "start-session":
             DeepLinkManager.shared.pendingAction = .openSession
-        case "time-limit-unlock":
+        case "time-limit-unlock", "time-limit-challenge":
             DeepLinkManager.shared.pendingAction = .timeLimitUnlock
         default:
             break

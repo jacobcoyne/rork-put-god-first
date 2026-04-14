@@ -239,6 +239,7 @@ final class ScreenTimeLimitService {
         sharedDefaults?.set(Date().timeIntervalSince1970, forKey: "lastTimeLimitUnlockTimestamp")
         sharedDefaults?.synchronize()
         unlockTimeLimitedApps()
+        NotificationService.sendPostChallengeNotification()
     }
 
     func wasTimeLimitUnlockedToday() -> Bool {
