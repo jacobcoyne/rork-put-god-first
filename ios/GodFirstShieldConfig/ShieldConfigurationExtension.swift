@@ -2,24 +2,24 @@ import ManagedSettings
 import ManagedSettingsUI
 import UIKit
 
-class ShieldConfigurationExtension: ShieldConfigurationDataSource {
-    override func configuration(shielding application: Application) -> ShieldConfiguration {
+nonisolated class ShieldConfigurationExtension: ShieldConfigurationDataSource {
+    nonisolated override func configuration(shielding application: Application) -> ShieldConfiguration {
         return buildConfiguration(appName: application.localizedDisplayName)
     }
 
-    override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
+    nonisolated override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
         return buildConfiguration(appName: application.localizedDisplayName ?? category.localizedDisplayName)
     }
 
-    override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
+    nonisolated override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
         return buildConfiguration(appName: webDomain.domain)
     }
 
-    override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
+    nonisolated override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
         return buildConfiguration(appName: webDomain.domain ?? category.localizedDisplayName)
     }
 
-    private func buildConfiguration(appName: String?) -> ShieldConfiguration {
+    nonisolated private func buildConfiguration(appName: String?) -> ShieldConfiguration {
         let messages: [(String, String)] = [
             ("🙏 God First, Scroll Later", "Put down %@ and pick up the Word! Complete your morning session to unlock."),
             ("⛪ Not Yet, Fam!", "%@ can wait. Your soul can't! Open Put God First to start your day right."),

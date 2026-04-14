@@ -4,7 +4,7 @@ import FamilyControls
 import Foundation
 import UserNotifications
 
-class DeviceActivityMonitorExtension: DeviceActivityMonitor {
+nonisolated class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     private let godFirstStore = ManagedSettingsStore(named: .init("godFirst"))
     private let timeLimitStore = ManagedSettingsStore(named: .init("godFirstScreenTimeLimit"))
     private let sharedDefaults = UserDefaults(suiteName: "group.app.rork.god-first-app-c1nigyo")
@@ -13,21 +13,21 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     private let timeLimitReachedEvent = "godFirst.timeLimitReached"
     private let timeLimitWarningEvent = "godFirst.timeLimitWarning"
 
-    override func intervalDidStart(for activity: DeviceActivityName) {
+    nonisolated override func intervalDidStart(for activity: DeviceActivityName) {
         if activity.rawValue == screenTimeLimitActivity {
             return
         }
         reblockIfNeeded()
     }
 
-    override func intervalDidEnd(for activity: DeviceActivityName) {
+    nonisolated override func intervalDidEnd(for activity: DeviceActivityName) {
         if activity.rawValue == screenTimeLimitActivity {
             return
         }
         reblockIfNeeded()
     }
 
-    override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
+    nonisolated override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         if activity.rawValue == screenTimeLimitActivity {
             if event.rawValue == timeLimitReachedEvent {
                 lockTimeLimitApps()
@@ -38,14 +38,14 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         reblockIfNeeded()
     }
 
-    override func intervalWillStartWarning(for activity: DeviceActivityName) {
+    nonisolated override func intervalWillStartWarning(for activity: DeviceActivityName) {
         if activity.rawValue == screenTimeLimitActivity {
             return
         }
         reblockIfNeeded()
     }
 
-    override func intervalWillEndWarning(for activity: DeviceActivityName) {
+    nonisolated override func intervalWillEndWarning(for activity: DeviceActivityName) {
         if activity.rawValue == screenTimeLimitActivity {
             return
         }

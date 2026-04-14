@@ -1,7 +1,7 @@
 import ManagedSettings
 
-class ShieldActionExtension: ShieldActionDelegate {
-    override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+nonisolated class ShieldActionExtension: ShieldActionDelegate {
+    nonisolated override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
             completionHandler(.defer)
@@ -12,7 +12,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
-    override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+    nonisolated override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
             completionHandler(.defer)
@@ -23,7 +23,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
-    override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+    nonisolated override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
             completionHandler(.defer)
